@@ -59,9 +59,9 @@ unsigned long lastSendTime = 0;
 float readPH() {
   int raw = analogRead(PH_PIN);
   float voltage = raw * (ADC_VREF / ADC_RES);
-  // Convert voltage to pH (linear calibration)
+  // Convert voltage to pH (linear calibration, inverse relationship)
   // NOTE: ESP32 uses 3.3V ADC, so midpoint is ~1.65V (not 2.5V like 5V Arduino)
-  float ph = 7.0 + ((ADC_VREF / 2.0 - voltage) / PH_SLOPE) + PH_OFFSET;
+  float ph = 7.0 + ((ADC_VREF / 2.0 - voltage) * PH_SLOPE) + PH_OFFSET;
   return constrain(ph, 0.0, 14.0);
 }
 

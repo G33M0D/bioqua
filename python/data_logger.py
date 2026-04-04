@@ -94,10 +94,12 @@ class DataLogger:
         date_str = time.strftime("%Y-%m-%d", now)
         time_str = time.strftime("%H:%M:%S", now)
 
-        # Save image if provided
+        # Save image if provided (use monotonic counter to avoid filename collision)
         image_file = ""
         if frame is not None and cv2 is not None:
-            filename = time.strftime(f"%Y%m%d_%H%M%S_{self.location}.jpg", now)
+            import datetime
+            ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            filename = f"{ts}_{self.location}.jpg"
             filepath = os.path.join(IMAGE_SAVE_DIR, filename)
             if cv2.imwrite(filepath, frame):
                 image_file = os.path.relpath(filepath, PROJECT_ROOT)

@@ -148,6 +148,7 @@ def classify_image(model, frame):
 
     # Resize to what the model expects (224x224 for Teachable Machine)
     img = cv2.resize(frame, AI_IMAGE_SIZE)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # OpenCV uses BGR, Keras expects RGB
     img_array = np.expand_dims(img / 255.0, axis=0).astype(np.float32)
 
     # Predict
