@@ -69,8 +69,12 @@ def generate_report(date_filter=None):
 
     os.makedirs(REPORTS_DIR, exist_ok=True)
 
-    date_str = date_filter or time.strftime("%Y-%m-%d")
-    filename = f"aquaguard_report_{date_str}.pdf"
+    if date_filter:
+        date_str = date_filter
+        filename = f"aquaguard_report_{date_str}.pdf"
+    else:
+        date_str = time.strftime("%Y-%m-%d")
+        filename = f"aquaguard_report_{date_str}_all.pdf"
     filepath = os.path.join(REPORTS_DIR, filename)
 
     pdf = FPDF()
@@ -116,10 +120,12 @@ def generate_report(date_filter=None):
         locations.add(entry.get("location", "Unknown"))
 
         try:
-            ph_values.append(float(entry.get("ph", 0)))
-            ec_values.append(float(entry.get("ec_us_cm", 0)))
-        except ValueError:
-            pass
+            ph_val = float(entry.get("ph", ""))
+            ec_val = float(entry.get("ec_us_cm", ""))
+            ph_values.append(ph_val)
+            ec_values.append(ec_val)
+        except (ValueError, TypeError):
+            pass  # Skip rows with missing/invalid sensor data
 
     # Risk summary
     pdf.set_font("Helvetica", "B", 14)
@@ -133,12 +139,14 @@ def generate_report(date_filter=None):
     pdf.ln(5)
 
     # Sensor ranges
-    if ph_values:
+    if ph_values or ec_values:
         pdf.set_font("Helvetica", "B", 14)
         pdf.cell(0, 10, "Sensor Readings", new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", "", 12)
-        pdf.cell(0, 8, f"  pH range: {min(ph_values):.1f} - {max(ph_values):.1f} (normal: 6.5-8.5)", new_x="LMARGIN", new_y="NEXT")
-        pdf.cell(0, 8, f"  EC range: {min(ec_values):.0f} - {max(ec_values):.0f} uS/cm (normal: <1500)", new_x="LMARGIN", new_y="NEXT")
+        if ph_values:
+            pdf.cell(0, 8, f"  pH range: {min(ph_values):.1f} - {max(ph_values):.1f} (normal: 6.5-8.5)", new_x="LMARGIN", new_y="NEXT")
+        if ec_values:
+            pdf.cell(0, 8, f"  EC range: {min(ec_values):.0f} - {max(ec_values):.0f} uS/cm (normal: <1500)", new_x="LMARGIN", new_y="NEXT")
 
     pdf.ln(5)
 

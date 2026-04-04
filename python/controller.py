@@ -383,7 +383,10 @@ def main():
                 cv2.putText(display_frame, "Staining in progress... please wait",
                             (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 200, 255), 2)
                 cv2.imshow("AquaGuard - Live Feed", display_frame)
-                cv2.waitKey(1000)
+                key = cv2.waitKey(100) & 0xFF
+                if key == ord('q'):
+                    print("\nShutting down AquaGuard...")
+                    break
                 continue
 
             # Classify bacteria
@@ -421,10 +424,11 @@ def main():
             if data_logger and result_changed and bacteria_class not in ("No Model",):
                 data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk, frame)
 
-            # Send result to Arduino LCD (only when it changes, to avoid flooding)
-            if arduino and result_changed and bacteria_class not in ("No Model", "Uncertain"):
+            # Send result to Arduino LCD
+            # Always send when result changes; also resend periodically to refresh sensor values
+            if arduino and bacteria_class not in ("No Model", "Uncertain"):
                 try:
-                    arduino.write(f"RESULT:{current_result}\n".encode())
+                    arduino.write(f"RESULT:{bacteria_class},{risk}\n".encode())
                 except Exception:
                     pass
 
