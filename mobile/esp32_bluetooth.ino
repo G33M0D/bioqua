@@ -116,31 +116,33 @@ void processIncoming(String line) {
 // --------------- LCD Display ---------------
 
 void updateLCD(float ph, float ec) {
-  lcd.clear();
+  // Use setCursor + overwrite instead of lcd.clear() to prevent flicker
 
-  // Row 0: Title
-  lcd.setCursor(0, 0);
-  lcd.print("== AquaGuard v1.0 ==");
+  // Row 0: Title (static — only write once)
+  static bool titleDrawn = false;
+  if (!titleDrawn) {
+    lcd.setCursor(0, 0);
+    lcd.print("== AquaGuard v1.0 ==");
+    titleDrawn = true;
+  }
 
-  // Row 1: pH and EC readings
+  // Row 1: pH and EC readings (pad to 20 chars to overwrite old content)
   lcd.setCursor(0, 1);
-  lcd.print("pH:");
-  lcd.print(ph, 2);
-  lcd.print("  EC:");
-  lcd.print(ec, 1);
+  String row1 = "pH:" + String(ph, 2) + "  EC:" + String(ec, 1);
+  while (row1.length() < 20) row1 += " ";
+  lcd.print(row1);
 
   // Row 2: Status and risk
   lcd.setCursor(0, 2);
-  lcd.print("St:");
-  String stTrunc = currentStatus.substring(0, 8);
-  lcd.print(stTrunc);
-  lcd.print(" Rk:");
-  lcd.print(riskLevel.substring(0, 5));
+  String row2 = "St:" + currentStatus.substring(0, 8) + " Rk:" + riskLevel.substring(0, 5);
+  while (row2.length() < 20) row2 += " ";
+  lcd.print(row2);
 
   // Row 3: Bacteria type
   lcd.setCursor(0, 3);
-  lcd.print("Bact:");
-  lcd.print(bacteriaType.substring(0, 14));
+  String row3 = "Bact:" + bacteriaType.substring(0, 14);
+  while (row3.length() < 20) row3 += " ";
+  lcd.print(row3);
 }
 
 // --------------- Setup ---------------

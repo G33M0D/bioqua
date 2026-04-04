@@ -142,11 +142,16 @@ def train_classifier():
     class_dirs = sorted([d for d in os.listdir(data_dir)
                          if os.path.isdir(os.path.join(data_dir, d))])
 
-    for class_idx, class_name in enumerate(class_dirs):
+    # Track actual class index — only count dirs that produce samples
+    actual_class_idx = 0
+    for class_name in class_dirs:
         class_dir = os.path.join(data_dir, class_name)
-        label_names.append(class_name)
         images = [f for f in os.listdir(class_dir)
                   if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp'))]
+
+        if not images:
+            print(f"  {class_name}: 0 images (SKIPPED)")
+            continue
 
         print(f"  {class_name}: {len(images)} images", end=" ")
 
@@ -156,10 +161,15 @@ def train_classifier():
             feat = extract_features(img_path)
             if feat is not None:
                 features.append(feat)
-                labels.append(class_idx)
+                labels.append(actual_class_idx)
                 count += 1
 
-        print(f"({count} processed)")
+        if count > 0:
+            label_names.append(class_name)
+            actual_class_idx += 1
+            print(f"({count} processed)")
+        else:
+            print("(0 processed — SKIPPED)")
 
     if not features:
         print("\nERROR: No images found in training_data/")
@@ -171,9 +181,19 @@ def train_classifier():
     print(f"\nTotal samples: {len(X)}")
     print(f"Features per sample: {X.shape[1]}")
 
+    # Check minimum samples per class for stratified split
+    from collections import Counter
+    class_counts = Counter(y)
+    min_count = min(class_counts.values())
+    use_stratify = min_count >= 2
+
+    if not use_stratify:
+        print("WARNING: Some classes have <2 samples. Stratified split disabled.")
+
     # Split into training and testing
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X, y, test_size=0.2, random_state=42,
+        stratify=y if use_stratify else None
     )
 
     # Train Random Forest

@@ -114,7 +114,10 @@ def main():
         print("  4. On Windows: install CH340 USB driver")
     except KeyboardInterrupt:
         print("\n\nTest stopped.")
-        arduino.close()
+        try:
+            arduino.close()
+        except NameError:
+            pass  # arduino was never created
 
     print()
     print(f"If the correct port is different, update SERIAL_PORT in config.py")

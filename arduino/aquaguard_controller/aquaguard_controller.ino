@@ -66,7 +66,7 @@ unsigned long SETTLE_MS         = 120000;  // Bacteria settle time: 2 min
 // Adjust these based on your specific sensor readings.
 
 float PH_OFFSET = 0.0;         // Add/subtract to correct pH reading
-float PH_SLOPE = 1.0;          // Multiply to correct pH reading
+float PH_SLOPE = 5.7;          // pH units per volt (typical for PH-4502C)
 float TDS_FACTOR = 0.5;        // Conversion factor for TDS sensor
 
 // ─── STATE VARIABLES ─────────────────────────────────────────
@@ -186,10 +186,10 @@ float readPH() {
     int rawValue = analogRead(PH_PIN);
     float voltage = rawValue * (5.0 / 1023.0);
 
-    // Convert voltage to pH
-    // PH-4502C: pH = 3.5 * voltage + offset
-    // Calibrate with buffer solutions and adjust PH_OFFSET and PH_SLOPE
-    float pH = (3.5 * voltage + PH_OFFSET) * PH_SLOPE;
+    // Convert voltage to pH (inverse relationship: higher voltage = lower pH)
+    // PH-4502C neutral point is ~2.5V at pH 7. Slope ~-5.7 pH/V typical.
+    // Calibrate with buffer solutions and adjust PH_OFFSET and PH_SLOPE.
+    float pH = 7.0 + ((2.5 - voltage) * PH_SLOPE) + PH_OFFSET;
 
     // Clamp to valid range
     if (pH < 0) pH = 0;

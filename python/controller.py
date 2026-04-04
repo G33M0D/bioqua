@@ -158,6 +158,11 @@ def classify_image(model, frame):
     if confidence < AI_CONFIDENCE_THRESHOLD:
         return "Uncertain", confidence
 
+    if class_idx >= len(CLASS_NAMES):
+        print(f"WARNING: Model output class {class_idx} but only {len(CLASS_NAMES)} classes defined.")
+        print("  Your model may have more classes than CLASS_NAMES in config.py.")
+        return f"Unknown (class {class_idx})", confidence
+
     return CLASS_NAMES[class_idx], confidence
 
 
@@ -358,6 +363,7 @@ def main():
                     continue
                 elif ph == "STAINING_DONE":
                     staining_in_progress = False
+                    last_sent_result = ""  # Reset so result is always sent after staining
                     # Fall through to classify the now-stained slide
                 elif ph is not None:
                     last_ph = ph
@@ -425,7 +431,7 @@ def main():
                 last_sent_result = current_result
 
             # Handle keyboard input
-            key = cv2.waitKey(1000) & 0xFF  # 1 second delay between frames
+            key = cv2.waitKey(100) & 0xFF  # 100ms between frames for responsive UI
 
             if key == ord('q'):
                 print("\nShutting down AquaGuard...")
