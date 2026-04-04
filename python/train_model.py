@@ -110,21 +110,27 @@ def train():
     data_dir = os.path.join(PROJECT_ROOT, "training_data")
 
     print("Setting up data augmentation...")
-    # Data augmentation — rotate, flip, zoom to create more training variety
+    # Training data gets augmented — rotate, flip, zoom for variety
     # IMPORTANT: Do NOT augment color/hue — it would corrupt Gram stain information!
-    datagen = ImageDataGenerator(
-        rotation_range=20,          # Rotate up to 20 degrees
-        width_shift_range=0.1,      # Shift horizontally
-        height_shift_range=0.1,     # Shift vertically
-        zoom_range=0.15,            # Zoom in/out slightly
-        horizontal_flip=True,       # Flip left-right
-        vertical_flip=True,         # Flip up-down
-        validation_split=0.2,       # Use 20% for testing
-        rescale=1.0 / 255.0         # Normalize pixel values to 0-1
+    train_datagen = ImageDataGenerator(
+        rotation_range=20,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        zoom_range=0.15,
+        horizontal_flip=True,
+        vertical_flip=True,
+        validation_split=0.2,
+        rescale=1.0 / 255.0
+    )
+
+    # Validation data gets NO augmentation — clean holdout for honest accuracy
+    val_datagen = ImageDataGenerator(
+        validation_split=0.2,
+        rescale=1.0 / 255.0
     )
 
     print("Loading training images...")
-    train_data = datagen.flow_from_directory(
+    train_data = train_datagen.flow_from_directory(
         data_dir,
         target_size=AI_IMAGE_SIZE,
         batch_size=16,
@@ -133,7 +139,7 @@ def train():
         shuffle=True
     )
 
-    val_data = datagen.flow_from_directory(
+    val_data = val_datagen.flow_from_directory(
         data_dir,
         target_size=AI_IMAGE_SIZE,
         batch_size=16,
@@ -188,9 +194,18 @@ def train():
         verbose=1
     )
 
-    # Save model
+    # Save model and class mapping
     os.makedirs(os.path.dirname(AI_MODEL_PATH), exist_ok=True)
     model.save(AI_MODEL_PATH)
+
+    # Save class indices so inference uses the same label order
+    import json
+    class_map_path = AI_MODEL_PATH.replace('.h5', '_classes.json')
+    # Invert {name: index} to {index: name} for easy lookup
+    idx_to_class = {v: k for k, v in train_data.class_indices.items()}
+    with open(class_map_path, 'w') as f:
+        json.dump(idx_to_class, f, indent=2)
+    print(f"  Class mapping saved to: {class_map_path}")
 
     # Print results
     final_acc = history.history['accuracy'][-1]

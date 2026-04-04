@@ -69,9 +69,25 @@ def load_model():
         return None
 
     try:
+        import json
         from tensorflow.keras.models import load_model as keras_load
         model = keras_load(AI_MODEL_PATH, compile=False)
         print(f"AI model loaded from {AI_MODEL_PATH}")
+
+        # Load saved class mapping if available (from train_model.py)
+        class_map_path = AI_MODEL_PATH.replace('.h5', '_classes.json')
+        if os.path.exists(class_map_path):
+            with open(class_map_path) as f:
+                idx_to_class = json.load(f)
+            # Update CLASS_NAMES to match training order
+            global CLASS_NAMES
+            CLASS_NAMES = [idx_to_class[str(i)] for i in range(len(idx_to_class))]
+            # Convert folder names to display names
+            CLASS_NAMES = [n.replace("gram_negative_", "Gram- ").replace("gram_positive_", "Gram+ ")
+                           .replace("_", " ").title().replace("No Bacteria", "No Bacteria")
+                           for n in CLASS_NAMES]
+            print(f"  Class mapping loaded: {CLASS_NAMES}")
+
         return model
     except Exception as e:
         print(f"WARNING: Could not load AI model: {e}")
@@ -119,6 +135,10 @@ def connect_camera():
 
     print(f"Camera connected (index {CAMERA_INDEX})")
     return cap
+
+
+# Track whether we have real hardware
+_has_arduino = False
 
 
 def classify_image(model, frame):
@@ -194,8 +214,8 @@ def classify_with_hsv(frame):
             continue
         perimeter = cv2.arcLength(c, True)
         x, y, w, h = cv2.boundingRect(c)
-        if perimeter > 0 and h > 0:
-            circularities.append((4 * 3.14159 * area) / (perimeter ** 2))
+        if perimeter > 1 and h > 0:
+            circularities.append((4 * 3.14159 * area) / (perimeter ** 2 + 1e-6))
             aspect_ratios.append(w / h)
 
     # Determine shape
@@ -254,7 +274,7 @@ def calculate_risk(ph, ec, bacteria_class):
 def read_arduino_sensors(arduino):
     """Read pH and EC values from Arduino serial output."""
     if arduino is None:
-        return 7.0, 500.0  # Default values when no Arduino
+        return 7.0, 500.0  # Demo defaults when no Arduino (UI shows warning)
 
     try:
         line = arduino.readline().decode('utf-8', errors='ignore').strip()
@@ -293,8 +313,10 @@ def main():
     print()
 
     # Connect to hardware
+    global _has_arduino
     model = load_model()
     arduino = connect_arduino()
+    _has_arduino = arduino is not None
     camera = connect_camera()
 
     if camera is None:
@@ -311,14 +333,10 @@ def main():
         except ImportError:
             print("WARNING: data_logger.py not found, logging disabled")
 
-    # Load modular sensors (pass shared serial connection to avoid port conflicts)
-    extra_sensors = []
-    if FEATURE_MODULAR_SENSORS:
-        try:
-            from sensors import load_all_sensors
-            extra_sensors = load_all_sensors(arduino_serial=arduino)
-        except ImportError:
-            print("WARNING: sensors package not found")
+    # Note: FEATURE_MODULAR_SENSORS is reserved for future use.
+    # When enabled, additional sensors (temperature, turbidity) will be
+    # read and included in risk scoring. For now, core pH/EC sensors
+    # are read directly from the Arduino serial stream.
 
     print()
     print("Controls: [q]uit  [s]tart staining  [c]apture image  [r]eport")
@@ -376,25 +394,35 @@ def main():
             risk_colors = {"LOW": (0, 200, 0), "MODERATE": (0, 165, 255), "HIGH": (0, 0, 255)}
             color = risk_colors.get(risk, (255, 255, 255))
 
-            cv2.rectangle(display_frame, (0, 0), (display_frame.shape[1], 40), (0, 0, 0), -1)
+            bar_height = 50 if not _has_arduino else 40
+            cv2.rectangle(display_frame, (0, 0), (display_frame.shape[1], bar_height), (0, 0, 0), -1)
             cv2.putText(display_frame,
                         f"{bacteria_class} ({confidence:.0%}) | Risk: {risk} | pH:{last_ph:.1f} EC:{last_ec:.0f}",
                         (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+            if not _has_arduino:
+                cv2.putText(display_frame, "NO SENSOR — demo mode (values are defaults)",
+                            (10, 46), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
 
             cv2.imshow("AquaGuard - Live Feed", display_frame)
 
-            # Send result to Arduino LCD (only when it changes, to avoid flooding)
+            # Check if classification result changed
             current_result = f"{bacteria_class},{risk}"
-            if arduino and bacteria_class not in ("No Model", "Uncertain") and current_result != last_sent_result:
+            result_changed = (current_result != last_sent_result)
+
+            # Log data BEFORE updating last_sent_result (so the check works)
+            if data_logger and result_changed and bacteria_class not in ("No Model",):
+                data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk, frame)
+
+            # Send result to Arduino LCD (only when it changes, to avoid flooding)
+            if arduino and result_changed and bacteria_class not in ("No Model", "Uncertain"):
                 try:
                     arduino.write(f"RESULT:{current_result}\n".encode())
-                    last_sent_result = current_result
                 except Exception:
                     pass
 
-            # Log data (if feature enabled) — only when classification changes
-            if data_logger and bacteria_class not in ("No Model",) and current_result != last_sent_result:
-                data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk, frame)
+            # Update last sent result after both logging and sending
+            if result_changed:
+                last_sent_result = current_result
 
             # Handle keyboard input
             key = cv2.waitKey(1000) & 0xFF  # 1 second delay between frames

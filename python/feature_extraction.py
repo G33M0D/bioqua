@@ -108,7 +108,7 @@ def extract_features(image):
         x, y, w, h = cv2.boundingRect(c)
 
         if perimeter > 0 and h > 0:
-            circularity = (4 * np.pi * area) / (perimeter ** 2)
+            circularity = (4 * np.pi * area) / (perimeter ** 2 + 1e-6)
             aspect_ratio = w / h
             circularities.append(circularity)
             aspect_ratios.append(aspect_ratio)
@@ -138,11 +138,12 @@ def train_classifier():
     print("Extracting features from training images...")
     print("-" * 50)
 
-    for class_idx, class_name in enumerate(sorted(os.listdir(data_dir))):
-        class_dir = os.path.join(data_dir, class_name)
-        if not os.path.isdir(class_dir):
-            continue
+    # Filter to directories only BEFORE enumerating to keep indices aligned
+    class_dirs = sorted([d for d in os.listdir(data_dir)
+                         if os.path.isdir(os.path.join(data_dir, d))])
 
+    for class_idx, class_name in enumerate(class_dirs):
+        class_dir = os.path.join(data_dir, class_name)
         label_names.append(class_name)
         images = [f for f in os.listdir(class_dir)
                   if f.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp'))]

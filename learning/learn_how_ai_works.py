@@ -335,22 +335,23 @@ def demo_mode():
         pause()
         return
 
-    # Look for image files
+    # Look for image files in subfolders (training_data/class_name/*.jpg)
     image_extensions = (".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif")
     images = []
-    for f in os.listdir(training_dir):
-        if f.lower().endswith(image_extensions):
-            images.append(f)
+    for root, dirs, files in os.walk(training_dir):
+        for f in files:
+            if f.lower().endswith(image_extensions):
+                images.append(os.path.join(root, f))
 
     if not images:
-        print("  No sample images found in training_data/ directory.")
+        print("  No sample images found in training_data/ subfolders.")
         print("  Add .jpg or .png microscope images to try the demo.\n")
         pause()
         return
 
     print(f"  Found {len(images)} image(s) in training_data/:\n")
     for i, img in enumerate(images[:5], 1):
-        print(f"    {i}. {img}")
+        print(f"    {i}. {os.path.basename(img)}")
 
     print()
 

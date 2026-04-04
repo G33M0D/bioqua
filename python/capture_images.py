@@ -152,11 +152,14 @@ def main():
             count = count_images(class_dir)
             filename = f"{class_name}_{timestamp}_{count + 1:04d}.jpg"
             filepath = os.path.join(class_dir, filename)
-            cv2.imwrite(filepath, frame)
-
-            saved_message = f"Saved to {class_name}/ ({count + 1} total)"
-            saved_time = time.time()
-            print(f"  Saved: {filepath}")
+            if cv2.imwrite(filepath, frame):
+                saved_message = f"Saved to {class_name}/ ({count + 1} total)"
+                saved_time = time.time()
+                print(f"  Saved: {filepath}")
+            else:
+                saved_message = f"ERROR: Failed to save image!"
+                saved_time = time.time()
+                print(f"  ERROR: Failed to write {filepath}")
 
     cap.release()
     cv2.destroyAllWindows()

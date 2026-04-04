@@ -79,6 +79,7 @@ String lastResult = "";
 void setup() {
     // Start serial communication with laptop
     Serial.begin(9600);
+    Serial.setTimeout(100);  // Don't block loop waiting for serial input
 
     // IMPORTANT: Set pins HIGH (OFF) BEFORE setting them as OUTPUT.
     // This prevents a momentary "blip" that could briefly open valves

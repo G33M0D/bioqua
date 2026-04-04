@@ -72,7 +72,9 @@ class DataLogger:
 
     def set_location(self, location):
         """Set the sample location name (e.g., 'Tap Water', 'River')."""
-        self.location = location
+        # Sanitize: remove path separators and dangerous characters
+        import re
+        self.location = re.sub(r'[^\w\s\-]', '', location).strip() or "Unknown"
 
     def log(self, ph, ec, bacteria_class, confidence, risk, frame=None, notes=""):
         """
@@ -97,8 +99,8 @@ class DataLogger:
         if frame is not None and cv2 is not None:
             filename = time.strftime(f"%Y%m%d_%H%M%S_{self.location}.jpg", now)
             filepath = os.path.join(IMAGE_SAVE_DIR, filename)
-            cv2.imwrite(filepath, frame)
-            image_file = os.path.relpath(filepath, PROJECT_ROOT)
+            if cv2.imwrite(filepath, frame):
+                image_file = os.path.relpath(filepath, PROJECT_ROOT)
 
         # Append to CSV
         row = [

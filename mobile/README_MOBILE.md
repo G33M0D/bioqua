@@ -46,6 +46,7 @@ Add these components from the palette:
 | Button | `btnDisconnect` | Text: "Disconnect" |
 | BluetoothClient | `btClient` | (non-visible, drag from Connectivity palette) |
 | Clock | `clockReceive` | TimerInterval: 500, TimerEnabled: true |
+| Button | `btnClassify` | Text: "Send Classification" (optional — for manual result sending) |
 
 ### Blocks View -- Programming the Logic
 
@@ -89,6 +90,10 @@ when clockReceive.Timer
           set sliderEC.ThumbPosition to select list item kv index 2
         else if select list item kv index 1 = "status" then
           set lblStatus.Text to join "Status: " select list item kv index 2
+        else if select list item kv index 1 = "risk" then
+          set lblRisk.Text to join "Risk: " select list item kv index 2
+        else if select list item kv index 1 = "bacteria" then
+          set lblBacteria.Text to join "Bacteria: " select list item kv index 2
         end if
       end for
     end if
@@ -115,7 +120,7 @@ when clockReceive.Timer (add to existing block)
   -- After parsing, update risk color
   if lblRisk.Text contains "HIGH" then
     set lblRisk.TextColor to red
-  else if lblRisk.Text contains "MEDIUM" then
+  else if lblRisk.Text contains "MODERATE" then
     set lblRisk.TextColor to orange
   else if lblRisk.Text contains "LOW" then
     set lblRisk.TextColor to green

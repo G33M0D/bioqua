@@ -180,6 +180,21 @@ def generate_report(date_filter=None):
             pdf.cell(col_widths[i], 7, str(val), border=1)
         pdf.ln()
 
+    # ── Trend Chart ──
+    if len(entries) >= 2:
+        chart_path = filepath.replace('.pdf', '_chart.png')
+        chart_file = generate_chart(entries, chart_path)
+        if chart_file:
+            pdf.add_page()
+            pdf.set_font("Helvetica", "B", 18)
+            pdf.cell(0, 12, "Trend Chart", new_x="LMARGIN", new_y="NEXT")
+            pdf.ln(5)
+            try:
+                pdf.image(chart_file, x=10, w=190)
+            except Exception:
+                pdf.set_font("Helvetica", "", 12)
+                pdf.cell(0, 8, "(Chart could not be embedded)", new_x="LMARGIN", new_y="NEXT")
+
     # ── Save ──
     pdf.output(filepath)
     print(f"Report saved: {filepath}")

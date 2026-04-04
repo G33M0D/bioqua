@@ -131,8 +131,10 @@ TURBIDITY_SENSOR_PIN = "A3"     # Analog turbidity sensor module
 ESP32_BLUETOOTH_NAME = "AquaGuard"
 
 # ─── ARDUINO PIN ASSIGNMENTS ─────────────────────────────────
-# Which Arduino Mega pins connect to which components.
-# Change these if you wire things differently.
+# IMPORTANT: These values are for REFERENCE ONLY on the Python side.
+# The Arduino sketch has its OWN copy of pin assignments and timings.
+# If you change values here, you MUST also update the Arduino sketch
+# (arduino/aquaguard_controller/aquaguard_controller.ino) to match!
 
 RELAY_PINS = {
     "crystal_violet": 2,   # Relay 1 → Solenoid valve 1
