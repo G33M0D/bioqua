@@ -130,13 +130,17 @@ def train():
     )
 
     print("Loading training images...")
+    # Use same seed so both generators split the same way (no data leakage)
+    SPLIT_SEED = 42
+
     train_data = train_datagen.flow_from_directory(
         data_dir,
         target_size=AI_IMAGE_SIZE,
         batch_size=16,
         class_mode='categorical',
         subset='training',
-        shuffle=True
+        shuffle=True,
+        seed=SPLIT_SEED
     )
 
     val_data = val_datagen.flow_from_directory(
@@ -145,7 +149,8 @@ def train():
         batch_size=16,
         class_mode='categorical',
         subset='validation',
-        shuffle=False
+        shuffle=False,
+        seed=SPLIT_SEED
     )
 
     num_classes = train_data.num_classes

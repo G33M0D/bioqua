@@ -98,7 +98,7 @@ def connect_arduino():
     """Connect to the Arduino via serial port."""
     try:
         import serial
-        arduino = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=2)
+        arduino = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=0.1)
         time.sleep(2)  # Wait for Arduino to reset after connection
         print(f"Arduino connected on {SERIAL_PORT}")
 
@@ -364,7 +364,9 @@ def main():
                 elif ph == "STAINING_DONE":
                     staining_in_progress = False
                     last_sent_result = ""  # Reset so result is always sent after staining
-                    # Fall through to classify the now-stained slide
+                    # Don't continue — let it proceed to classify the stained slide
+                    ph = last_ph  # Restore float value to prevent TypeError downstream
+                    ec = last_ec
                 elif ph is not None:
                     last_ph = ph
                     last_ec = ec
