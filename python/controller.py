@@ -351,6 +351,7 @@ def main():
     last_ph = 7.0
     last_ec = 500.0
     last_sent_result = ""
+    last_arduino_send_time = 0  # Rate-limit RESULT sends to Arduino
     staining_in_progress = False  # Pause classification during staining
 
     try:
@@ -424,11 +425,13 @@ def main():
             if data_logger and result_changed and bacteria_class not in ("No Model",):
                 data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk, frame)
 
-            # Send result to Arduino LCD
-            # Always send when result changes; also resend periodically to refresh sensor values
-            if arduino and bacteria_class not in ("No Model", "Uncertain"):
+            # Send result to Arduino LCD — on change, or every 2 seconds to keep LCD fresh
+            now = time.time()
+            should_send = result_changed or (now - last_arduino_send_time >= 2.0)
+            if arduino and should_send and bacteria_class not in ("No Model", "Uncertain"):
                 try:
                     arduino.write(f"RESULT:{bacteria_class},{risk}\n".encode())
+                    last_arduino_send_time = now
                 except Exception:
                     pass
 

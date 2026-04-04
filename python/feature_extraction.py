@@ -207,7 +207,11 @@ def train_classifier():
 
     print(f"\nAccuracy: {accuracy:.1%}")
     print("\nDetailed results:")
-    print(classification_report(y_test, y_pred, target_names=label_names))
+    # Only pass label_names for classes that appear in test set
+    test_labels = sorted(set(y_test))
+    test_label_names = [label_names[i] for i in test_labels if i < len(label_names)]
+    print(classification_report(y_test, y_pred, labels=test_labels,
+                                target_names=test_label_names))
 
     # Feature importance
     feature_names = ["Purple Ratio", "Pink Ratio", "Circularity", "Aspect Ratio", "Count"]
