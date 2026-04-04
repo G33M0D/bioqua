@@ -42,13 +42,15 @@ CAMERA_INDEX = 0
 # After training, your model will be saved here automatically.
 AI_MODEL_PATH = os.path.join(PROJECT_ROOT, "models", "aquaguard_model.h5")
 
-# Class names — must match the folder names in training_data/
-# The order must match what the model was trained on.
+# Class names — MUST match alphabetical order of folder names in training_data/
+# because Keras flow_from_directory() assigns class indices alphabetically.
+# Folders: gram_negative_bacilli, gram_negative_cocci, gram_positive_bacilli,
+#          gram_positive_cocci, no_bacteria → indices 0, 1, 2, 3, 4
 CLASS_NAMES = [
-    "Gram+ Cocci",
-    "Gram+ Bacilli",
-    "Gram- Cocci",
     "Gram- Bacilli",
+    "Gram- Cocci",
+    "Gram+ Bacilli",
+    "Gram+ Cocci",
     "No Bacteria",
 ]
 

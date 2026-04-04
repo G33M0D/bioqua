@@ -258,12 +258,22 @@ def read_arduino_sensors(arduino):
 
     try:
         line = arduino.readline().decode('utf-8', errors='ignore').strip()
-        if not line or ',' not in line:
+        if not line:
             return None, None
 
-        # Skip status/step messages from Arduino
-        if line.startswith("STEP:") or line.startswith("STAINING") or line.startswith("AQUAGUARD") or line.startswith("STATUS:"):
+        # Handle Arduino status messages — staining state synchronization
+        if line == "STAINING_START":
+            print("  Arduino: Staining sequence started")
+            return "STAINING_START", None
+        elif line == "STAINING_DONE":
+            print("  Arduino: Staining complete — ready for classification")
+            return "STAINING_DONE", None
+        elif line.startswith(("STEP:", "STAINING", "AQUAGUARD", "STATUS:")):
             print(f"  Arduino: {line}")
+            return None, None
+
+        # Only parse sensor CSV if line contains comma
+        if ',' not in line:
             return None, None
 
         parts = line.split(',')
@@ -318,19 +328,36 @@ def main():
     last_ph = 7.0
     last_ec = 500.0
     last_sent_result = ""
+    staining_in_progress = False  # Pause classification during staining
 
     try:
         while True:
             # Read sensors from Arduino
             if arduino:
                 ph, ec = read_arduino_sensors(arduino)
-                if ph is not None:
+                if ph == "STAINING_START":
+                    staining_in_progress = True
+                    continue
+                elif ph == "STAINING_DONE":
+                    staining_in_progress = False
+                    # Fall through to classify the now-stained slide
+                elif ph is not None:
                     last_ph = ph
                     last_ec = ec
 
             # Capture microscope frame
             ret, frame = camera.read()
             if not ret:
+                continue
+
+            # Skip classification while staining is in progress
+            if staining_in_progress:
+                display_frame = frame.copy()
+                cv2.rectangle(display_frame, (0, 0), (display_frame.shape[1], 40), (0, 0, 0), -1)
+                cv2.putText(display_frame, "Staining in progress... please wait",
+                            (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 200, 255), 2)
+                cv2.imshow("AquaGuard - Live Feed", display_frame)
+                cv2.waitKey(1000)
                 continue
 
             # Classify bacteria
@@ -365,8 +392,8 @@ def main():
                 except Exception:
                     pass
 
-            # Log data (if feature enabled)
-            if data_logger and bacteria_class not in ("No Model",):
+            # Log data (if feature enabled) — only when classification changes
+            if data_logger and bacteria_class not in ("No Model",) and current_result != last_sent_result:
                 data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk, frame)
 
             # Handle keyboard input
@@ -386,9 +413,13 @@ def main():
                 # Capture and save current image
                 timestamp = time.strftime("%Y%m%d_%H%M%S")
                 filename = f"capture_{timestamp}.jpg"
-                filepath = os.path.join(PROJECT_ROOT, "results", "images", filename)
-                cv2.imwrite(filepath, frame)
-                print(f"\nImage saved: {filepath}")
+                save_dir = os.path.join(PROJECT_ROOT, "results", "images")
+                os.makedirs(save_dir, exist_ok=True)
+                filepath = os.path.join(save_dir, filename)
+                if cv2.imwrite(filepath, frame):
+                    print(f"\nImage saved: {filepath}")
+                else:
+                    print(f"\nERROR: Failed to save image to {filepath}")
             elif key == ord('r'):
                 if FEATURE_PDF_REPORTS:
                     try:
@@ -400,7 +431,7 @@ def main():
                     print("\nPDF reports disabled. Set FEATURE_PDF_REPORTS = True in config.py")
             elif key == ord('l'):
                 if FEATURE_LEARNING_MODULES:
-                    print("\nLearning modules:")
+                    print("\nLearning modules (run from the aquaguard/ folder):")
                     print("  1. python learning/learn_gram_staining.py")
                     print("  2. python learning/learn_bacteria_shapes.py")
                     print("  3. python learning/learn_how_ai_works.py")
