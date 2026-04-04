@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaGuard — Shopping List & Project Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #333; line-height: 1.6; }
+  .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+  h1 { color: #1a73e8; font-size: 2em; margin: 30px 0 5px; border-bottom: 3px solid #1a73e8; padding-bottom: 8px; }
+  h1:first-of-type { margin-top: 0; }
+  h2 { color: #0d47a1; font-size: 1.4em; margin: 25px 0 10px; }
+  h3 { color: #1565c0; font-size: 1.1em; margin: 18px 0 5px; }
+  .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: white; padding: 30px; border-radius: 12px; margin-bottom: 25px; text-align: center; }
+  .header h1 { color: white; border: none; font-size: 2.2em; margin: 0; }
+  .header p { font-size: 1.1em; opacity: 0.9; margin-top: 8px; }
+  .card { background: white; border-radius: 10px; padding: 18px; margin: 12px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card h3 { margin-top: 0; }
+  .price { background: #e8f5e9; color: #2e7d32; padding: 3px 10px; border-radius: 15px; font-weight: bold; display: inline-block; margin: 5px 0; }
+  .search-link { color: #1a73e8; word-break: break-all; font-size: 0.85em; }
+  .budget-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+  .budget-table th, .budget-table td { padding: 10px 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+  .budget-table th { background: #e3f2fd; color: #0d47a1; }
+  .budget-table .recommended { background: #e8f5e9; font-weight: bold; }
+  .phase { display: flex; align-items: flex-start; margin: 10px 0; }
+  .phase-num { background: #1a73e8; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; margin-right: 12px; margin-top: 2px; }
+  .safety { background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .github { background: #f5f5f5; border: 2px solid #333; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0; }
+  .github a { color: #1a73e8; font-size: 1.2em; font-weight: bold; }
+  .misc-item { padding: 4px 0; }
+  .stores { background: #e8eaf6; padding: 10px 15px; border-radius: 8px; margin: 10px 0; }
+  .order-group { margin: 15px 0; }
+  .order-group strong { color: #0d47a1; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  @media print { body { background: white; } .container { max-width: 100%; } .card { box-shadow: none; border: 1px solid #ddd; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>AquaGuard</h1>
+  <p>AI-Powered Bacteria Detection for Safe Drinking Water</p>
+  <p><strong>Project by: Guillanne Marie Agreda | 2026</strong></p>
+</div>
+
+<h2>What is AquaGuard?</h2>
+<p>AquaGuard is an automated water quality monitoring system that detects bacteria in water samples using Arduino sensors, automated Gram staining, digital microscopy, and AI image classification. It outputs a water quality risk level (Low / Moderate / High) on an LCD display.</p>
+
+<h1>Shopping List (Shopee Philippines)</h1>
+<div class="stores">Recommended stores: <strong>Circuitrocks</strong>, <strong>Makerlab Electronics</strong>, <strong>e-Gizmo</strong></div>
+
+<div class="card">
+  <h3>1. Arduino Mega 2560 (clone)</h3>
+  <span class="price">PHP 350 - 550</span>
+  <p>Needed for many I/O pins (sensors + valves + pump + LCD)</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=arduino+mega+2560" target="_blank">shopee.ph — arduino mega 2560</a></p>
+</div>
+
+<div class="card">
+  <h3>2. pH Sensor Module (PH-4502C)</h3>
+  <span class="price">PHP 150 - 450</span>
+  <p>Get the kit with BNC electrode probe. Also buy pH calibration buffer powder (4.01, 6.86, 9.18)</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=pH+sensor+PH-4502C+Arduino" target="_blank">shopee.ph — pH sensor PH-4502C</a></p>
+</div>
+
+<div class="card">
+  <h3>3. TDS / Electrical Conductivity Sensor</h3>
+  <span class="price">PHP 120 - 350</span>
+  <p>"Analog TDS Sensor Water Conductivity" or "TDS meter V1.0 module"</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=TDS+sensor+module+Arduino+analog" target="_blank">shopee.ph — TDS sensor</a></p>
+</div>
+
+<div class="card">
+  <h3>4. Solenoid Valves (x5)</h3>
+  <span class="price">PHP 400 - 1,250</span>
+  <p>5 normally-closed 12V plastic valves — one each for Crystal Violet, Iodine, Decolorizer, Safranin, DI Water</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=12V+solenoid+valve+water+Arduino" target="_blank">shopee.ph — 12V solenoid valve</a></p>
+</div>
+
+<div class="card">
+  <h3>5. Peristaltic Pump (12V micro)</h3>
+  <span class="price">PHP 350 - 800</span>
+  <p>"Micro peristaltic pump DC 12V 3x5mm" — 0.5-2 mL/min flow rate</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=peristaltic+pump+12V" target="_blank">shopee.ph — peristaltic pump</a></p>
+</div>
+
+<div class="card">
+  <h3>6. USB Digital Microscope</h3>
+  <span class="price">PHP 350 - 3,500</span>
+  <p>At least 2MP, adjustable LED ring, and stand. Tip: cheap "1000x" USB microscopes realistically do ~200-400x. Pair with school microscope + USB eyepiece camera for best results.</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=digital+microscope+1000x+USB" target="_blank">shopee.ph — digital microscope</a> | <a href="https://shopee.ph/search?keyword=microscope+USB+eyepiece+camera" target="_blank">eyepiece camera</a></p>
+</div>
+
+<div class="card">
+  <h3>7. LCD Display (20x4 I2C)</h3>
+  <span class="price">PHP 150 - 280</span>
+  <p>Shows pH, EC, bacteria type, and risk level simultaneously</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=LCD+20x4+I2C+Arduino" target="_blank">shopee.ph — LCD 20x4 I2C</a></p>
+</div>
+
+<div class="card">
+  <h3>8. 4-Channel Relay Modules (x2)</h3>
+  <span class="price">PHP 160 - 320</span>
+  <p>Controls 5 solenoid valves + 1 pump + spare channels</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=4+channel+relay+module+5V+Arduino" target="_blank">shopee.ph — relay module</a></p>
+</div>
+
+<div class="card">
+  <h3>9. Silicone Tubing (food-grade, 3x5mm)</h3>
+  <span class="price">PHP 75 - 300</span>
+  <p>Get 5-10 meters</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=silicone+tubing+3mm+food+grade" target="_blank">shopee.ph — silicone tubing</a></p>
+</div>
+
+<div class="card">
+  <h3>10. Breadboard + Jumper Wires</h3>
+  <span class="price">PHP 90 - 220</span>
+  <p>Also get male-to-female and female-to-female dupont wires</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=breadboard+jumper+wires+Arduino+kit" target="_blank">shopee.ph — breadboard kit</a></p>
+</div>
+
+<div class="card">
+  <h3>11. 12V 5A Power Supply</h3>
+  <span class="price">PHP 200 - 400</span>
+  <p>Need 5A to power Mega + 5 solenoid valves + pump simultaneously</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=12V+5A+power+supply+adapter+DC" target="_blank">shopee.ph — 12V power supply</a></p>
+</div>
+
+<div class="card">
+  <h3>12. Gram Stain Kit</h3>
+  <span class="price">PHP 250 - 600</span>
+  <p>Contains: Crystal Violet, Iodine, Decolorizer, Safranin</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=gram+stain+kit+laboratory" target="_blank">shopee.ph — gram stain kit</a></p>
+</div>
+
+<div class="card">
+  <h3>13. Microscope Slides + Coverslips</h3>
+  <span class="price">PHP 230 - 550</span>
+  <p>72 slides + 100 coverslips</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=microscope+glass+slides+coverslips" target="_blank">shopee.ph — slides + coverslips</a></p>
+</div>
+
+<div class="card">
+  <h3>14. ESP32-CAM (optional)</h3>
+  <span class="price">PHP 180 - 400</span>
+  <p>For wireless camera — streams images via WiFi to laptop</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=ESP32-CAM+OV2640+Arduino" target="_blank">shopee.ph — ESP32-CAM</a></p>
+</div>
+
+<div class="card">
+  <h3>15. Pre-Filter + Fittings</h3>
+  <span class="price">PHP 100 - 300</span>
+  <p>Inline sediment filter + barb connectors</p>
+  <p class="search-link">Search: <a href="https://shopee.ph/search?keyword=inline+water+filter+sediment" target="_blank">shopee.ph — inline filter</a></p>
+</div>
+
+<div class="card">
+  <h3>16. Miscellaneous</h3>
+  <div class="misc-item">Flyback diodes (1N4007) — <strong>PHP 20-50</strong></div>
+  <div class="misc-item">Project enclosure / acrylic box — <strong>PHP 100-300</strong></div>
+  <div class="misc-item">Double-sided tape (3M VHB) — <strong>PHP 50-150</strong></div>
+  <div class="misc-item">Nitrile gloves — <strong>PHP 100-200</strong></div>
+  <div class="misc-item">Immersion oil — <strong>PHP 100-200</strong></div>
+  <div class="misc-item">Wire connectors / terminals — <strong>PHP 50-100</strong></div>
+</div>
+
+<h1>Budget Summary</h1>
+<table class="budget-table">
+  <tr><th>Tier</th><th>Estimate (PHP)</th></tr>
+  <tr><td>Low</td><td>PHP 3,305</td></tr>
+  <tr class="recommended"><td>Mid-range (recommended)</td><td>PHP 6,290</td></tr>
+  <tr><td>High</td><td>PHP 10,650</td></tr>
+</table>
+<p><strong>Optional enhancements</strong> (ESP32 Bluetooth + extra sensors): add PHP 310-670</p>
+<ul>
+  <li>ESP32 DevKit V1 — PHP 150-300 (<a href="https://shopee.ph/search?keyword=ESP32+devkit+v1" target="_blank">search</a>)</li>
+  <li>DS18B20 Temperature Sensor — PHP 60-120 (<a href="https://shopee.ph/search?keyword=DS18B20+waterproof+Arduino" target="_blank">search</a>)</li>
+  <li>Turbidity Sensor — PHP 100-250 (<a href="https://shopee.ph/search?keyword=turbidity+sensor+Arduino" target="_blank">search</a>)</li>
+</ul>
+
+<h1>Order Priority</h1>
+<div class="order-group">
+  <strong>Order first (longest shipping):</strong>
+  <ol><li>Arduino Mega 2560</li><li>USB microscope or eyepiece camera</li><li>Gram stain kit</li></ol>
+</div>
+<div class="order-group">
+  <strong>Order second:</strong>
+  <ol start="4"><li>pH sensor + TDS sensor</li><li>Solenoid valves (x5) + relay modules (x2)</li><li>Peristaltic pump + silicone tubing</li><li>LCD display + breadboard + wires</li></ol>
+</div>
+<div class="order-group">
+  <strong>Buy locally (hardware store):</strong>
+  <ol start="8"><li>Glass slides + coverslips</li><li>Double-sided tape, gloves, epoxy</li><li>12V power supply</li></ol>
+</div>
+
+<h1>Build Phases (8 weeks)</h1>
+<div class="phase"><div class="phase-num">1</div><div><strong>Week 1-2: Sensor Manifold</strong><br>Wire pH and EC sensors to Arduino, display readings on LCD</div></div>
+<div class="phase"><div class="phase-num">2</div><div><strong>Week 2-3: Flow Cell</strong><br>Build glass slide staining chamber with tubing connections</div></div>
+<div class="phase"><div class="phase-num">3</div><div><strong>Week 3-4: Valve Control</strong><br>Automate Gram stain sequence with solenoid valves + pump</div></div>
+<div class="phase"><div class="phase-num">4</div><div><strong>Week 4-5: Microscope</strong><br>Set up USB camera with OpenCV for image capture</div></div>
+<div class="phase"><div class="phase-num">5</div><div><strong>Week 5-7: AI Processing</strong><br>Train model with Google Teachable Machine, classify bacteria</div></div>
+<div class="phase"><div class="phase-num">6</div><div><strong>Week 7-8: Integration</strong><br>Combine sensors + AI into risk level (Low/Moderate/High)</div></div>
+
+<h1>Software (All Free)</h1>
+<p>No subscriptions, no API keys, everything runs offline on any laptop:</p>
+<ul>
+  <li><strong>Python 3</strong> — <a href="https://www.python.org/downloads/" target="_blank">python.org/downloads</a></li>
+  <li><strong>Arduino IDE</strong> — <a href="https://www.arduino.cc/en/software" target="_blank">arduino.cc/en/software</a></li>
+  <li><strong>Google Teachable Machine</strong> — <a href="https://teachablemachine.withgoogle.com" target="_blank">teachablemachine.withgoogle.com</a> (free, no login needed)</li>
+  <li><strong>TensorFlow, OpenCV</strong> — free Python packages (installed via pip)</li>
+</ul>
+
+<div class="github">
+  <p>All code, Arduino sketches, learning modules, and documentation:</p>
+  <a href="https://github.com/G33M0D/aquaguard" target="_blank">github.com/G33M0D/aquaguard</a>
+  <p style="margin-top:10px; font-size:0.9em; color:#666;">Clone: <code>git clone https://github.com/G33M0D/aquaguard.git</code></p>
+</div>
+
+<h1>Safety Rules</h1>
+<div class="safety">
+  <ul>
+    <li>Nitrile gloves + eye protection at all times</li>
+    <li>Crystal violet permanently stains everything — cover all work surfaces</li>
+    <li>Ethanol/acetone (decolorizer) is flammable — no open flames nearby</li>
+    <li>Dispose slides and reagent waste in 10% bleach soak for 30 minutes</li>
+    <li>Only use safe water sources (tap, pond, soil water) — no sewage</li>
+    <li>Adult supervision required for staining and soldering</li>
+  </ul>
+</div>
+
+<p style="text-align:center; margin-top:30px; font-size:1.2em;"><strong>Good luck, Guillanne Marie!</strong></p>
+
+</div>
+</body>
+</html>
