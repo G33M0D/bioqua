@@ -225,9 +225,11 @@ void runGramStain() {
 
     // --- Step 0: Load sample and let bacteria settle ---
     lcdStatus("Loading sample...", 1);
+    openValve(RELAY_WATER);  // Open water valve so pump has a fluid path
     openValve(RELAY_PUMP);
     delay(5000);  // Pump sample into chamber for 5 seconds
     closeValve(RELAY_PUMP);
+    closeValve(RELAY_WATER);
 
     lcdStatus("Settling: 2 min", 1);
     Serial.println("STEP:SETTLE");

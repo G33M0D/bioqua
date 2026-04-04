@@ -376,6 +376,7 @@ def main():
             # Capture microscope frame
             ret, frame = camera.read()
             if not ret:
+                cv2.waitKey(100)  # Keep UI responsive even on camera failure
                 continue
 
             # Skip classification while staining is in progress
