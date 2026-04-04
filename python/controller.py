@@ -1,0 +1,425 @@
+# ============================================================
+# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+#
+# Original Author : Guillanne Marie Agreda
+# Year            : 2026
+# License         : MIT License
+#
+# This project is the original work of the author.
+# Unauthorized removal of this notice is prohibited.
+# ============================================================
+
+"""
+AquaGuard Controller — The Brain
+=================================
+This is the main script that runs on your laptop. It:
+  1. Connects to the Arduino via USB serial
+  2. Reads pH and EC sensor data from Arduino
+  3. Captures images from the USB microscope
+  4. Runs the AI model to classify bacteria
+  5. Calculates a risk level (LOW / MODERATE / HIGH)
+  6. Sends the result back to the Arduino LCD
+  7. Shows a live video feed with overlay on your laptop
+
+HOW TO RUN:
+  python controller.py
+
+WHAT YOU SHOULD SEE:
+  - A video window showing the microscope feed
+  - Sensor readings + bacteria classification in the terminal
+  - Results displayed on the Arduino LCD
+
+KEYBOARD CONTROLS:
+  q = Quit
+  s = Start staining sequence
+  c = Capture a single image
+  r = Generate PDF report (if enabled)
+  l = Open learning modules (if enabled)
+"""
+
+import sys
+import os
+import time
+import signal
+
+# Add project root to path so we can import config
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    import cv2
+    import numpy as np
+except ImportError:
+    print("ERROR: Missing required packages.")
+    print("Run this command to install them:")
+    print("  pip install opencv-python numpy tensorflow pyserial")
+    sys.exit(1)
+
+from config import *
+
+
+def load_model():
+    """Load the trained AI model."""
+    if not os.path.exists(AI_MODEL_PATH):
+        print(f"WARNING: No AI model found at {AI_MODEL_PATH}")
+        print("The system will run without AI classification.")
+        print("To train a model:")
+        print("  1. Collect images using: python capture_images.py")
+        print("  2. Train the model using: python train_model.py")
+        print("  OR use Google Teachable Machine and export the model.")
+        return None
+
+    try:
+        from tensorflow.keras.models import load_model as keras_load
+        model = keras_load(AI_MODEL_PATH, compile=False)
+        print(f"AI model loaded from {AI_MODEL_PATH}")
+        return model
+    except Exception as e:
+        print(f"WARNING: Could not load AI model: {e}")
+        return None
+
+
+def connect_arduino():
+    """Connect to the Arduino via serial port."""
+    try:
+        import serial
+        arduino = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=2)
+        time.sleep(2)  # Wait for Arduino to reset after connection
+        print(f"Arduino connected on {SERIAL_PORT}")
+
+        # Wait for ready signal
+        for _ in range(10):
+            line = arduino.readline().decode('utf-8', errors='ignore').strip()
+            if line == "AQUAGUARD_READY":
+                print("Arduino is ready!")
+                return arduino
+            elif line:
+                print(f"  Arduino: {line}")
+
+        print("Arduino connected (no ready signal received)")
+        return arduino
+    except ImportError:
+        print("WARNING: pyserial not installed. Run: pip install pyserial")
+        print("Running in camera-only mode (no Arduino).")
+        return None
+    except Exception as e:
+        print(f"WARNING: Could not connect to Arduino on {SERIAL_PORT}: {e}")
+        print("Running in camera-only mode.")
+        print("TIP: Check your serial port in config.py (SERIAL_PORT setting)")
+        return None
+
+
+def connect_camera():
+    """Connect to the USB microscope camera."""
+    cap = cv2.VideoCapture(CAMERA_INDEX)
+    if not cap.isOpened():
+        print(f"ERROR: Could not open camera at index {CAMERA_INDEX}")
+        print("TIP: Try changing CAMERA_INDEX in config.py (0, 1, or 2)")
+        print("TIP: Run 'python test_camera.py' to find the right index")
+        return None
+
+    print(f"Camera connected (index {CAMERA_INDEX})")
+    return cap
+
+
+def classify_image(model, frame):
+    """Run the AI model on a microscope image."""
+    if model is None:
+        return "No Model", 0.0
+
+    # Resize to what the model expects (224x224 for Teachable Machine)
+    img = cv2.resize(frame, AI_IMAGE_SIZE)
+    img_array = np.expand_dims(img / 255.0, axis=0).astype(np.float32)
+
+    # Predict
+    predictions = model.predict(img_array, verbose=0)
+    class_idx = np.argmax(predictions[0])
+    confidence = float(predictions[0][class_idx])
+
+    if confidence < AI_CONFIDENCE_THRESHOLD:
+        return "Uncertain", confidence
+
+    return CLASS_NAMES[class_idx], confidence
+
+
+def classify_with_hsv(frame):
+    """
+    Fallback classification using HSV color thresholding.
+    Use this if no AI model is available.
+    """
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Detect purple (Gram-positive)
+    mask_pos = cv2.inRange(hsv,
+                           np.array(HSV_GRAM_POSITIVE[0]),
+                           np.array(HSV_GRAM_POSITIVE[1]))
+
+    # Detect pink (Gram-negative)
+    mask_neg1 = cv2.inRange(hsv,
+                            np.array(HSV_GRAM_NEGATIVE_1[0]),
+                            np.array(HSV_GRAM_NEGATIVE_1[1]))
+    mask_neg2 = cv2.inRange(hsv,
+                            np.array(HSV_GRAM_NEGATIVE_2[0]),
+                            np.array(HSV_GRAM_NEGATIVE_2[1]))
+    mask_neg = cv2.bitwise_or(mask_neg1, mask_neg2)
+
+    purple_count = cv2.countNonZero(mask_pos)
+    pink_count = cv2.countNonZero(mask_neg)
+
+    total_pixels = frame.shape[0] * frame.shape[1]
+    purple_ratio = purple_count / total_pixels
+    pink_ratio = pink_count / total_pixels
+
+    # Determine Gram type
+    if purple_ratio < 0.01 and pink_ratio < 0.01:
+        gram = "No Bacteria"
+    elif purple_ratio > pink_ratio:
+        gram = "Gram+"
+    else:
+        gram = "Gram-"
+
+    # Detect shapes using contours
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, thresh = cv2.threshold(blur, 0, 255,
+                              cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
+                                   cv2.CHAIN_APPROX_SIMPLE)
+
+    circularities = []
+    aspect_ratios = []
+
+    for c in contours:
+        area = cv2.contourArea(c)
+        if area < MIN_CONTOUR_AREA:
+            continue
+        perimeter = cv2.arcLength(c, True)
+        x, y, w, h = cv2.boundingRect(c)
+        if perimeter > 0 and h > 0:
+            circularities.append((4 * 3.14159 * area) / (perimeter ** 2))
+            aspect_ratios.append(w / h)
+
+    # Determine shape
+    if not circularities:
+        shape = ""
+    else:
+        avg_circ = sum(circularities) / len(circularities)
+        avg_ar = sum(aspect_ratios) / len(aspect_ratios)
+        if avg_circ > CIRCULARITY_COCCI:
+            shape = "Cocci"
+        elif avg_ar > ASPECT_RATIO_BACILLI or avg_ar < (1 / ASPECT_RATIO_BACILLI):
+            shape = "Bacilli"
+        else:
+            shape = "Spirilla"
+
+    if gram == "No Bacteria":
+        return "No Bacteria", max(purple_ratio, pink_ratio)
+
+    result = f"{gram} {shape}" if shape else gram
+    confidence = max(purple_ratio, pink_ratio)
+    return result, confidence
+
+
+def calculate_risk(ph, ec, bacteria_class):
+    """
+    Combine sensor readings + bacteria classification into a risk level.
+
+    Risk Levels:
+      HIGH     = Gram-negative detected OR extreme pH
+      MODERATE = Any bacteria detected OR pH/EC slightly off
+      LOW      = Clean water, normal readings
+    """
+    # Extreme pH = always high risk (wider margin than normal range)
+    extreme_low = PH_NORMAL_MIN - 1.5   # 5.0 by default
+    extreme_high = PH_NORMAL_MAX + 0.5  # 9.0 by default
+    if ph < extreme_low or ph > extreme_high:
+        return "HIGH"
+
+    # Gram-negative bacteria = potential pathogens
+    if "Gram-" in bacteria_class:
+        return "HIGH"
+
+    # Slightly abnormal pH or EC
+    if ph < PH_NORMAL_MIN or ph > PH_NORMAL_MAX:
+        return "MODERATE"
+    if ec > EC_NORMAL_MAX:
+        return "MODERATE"
+
+    # Any bacteria present
+    if bacteria_class != "No Bacteria" and bacteria_class != "No Model" and bacteria_class != "Uncertain":
+        return "MODERATE"
+
+    return "LOW"
+
+
+def read_arduino_sensors(arduino):
+    """Read pH and EC values from Arduino serial output."""
+    if arduino is None:
+        return 7.0, 500.0  # Default values when no Arduino
+
+    try:
+        line = arduino.readline().decode('utf-8', errors='ignore').strip()
+        if not line or ',' not in line:
+            return None, None
+
+        # Skip status/step messages from Arduino
+        if line.startswith("STEP:") or line.startswith("STAINING") or line.startswith("AQUAGUARD") or line.startswith("STATUS:"):
+            print(f"  Arduino: {line}")
+            return None, None
+
+        parts = line.split(',')
+        ph = float(parts[0])
+        ec = float(parts[1])
+        return ph, ec
+    except (ValueError, IndexError):
+        return None, None
+
+
+def main():
+    """Main control loop."""
+    print("=" * 60)
+    print("  AquaGuard: AI-Powered Bacteria Detection")
+    print("  Original Author: Guillanne Marie Agreda")
+    print("=" * 60)
+    print()
+
+    # Connect to hardware
+    model = load_model()
+    arduino = connect_arduino()
+    camera = connect_camera()
+
+    if camera is None:
+        print("\nCannot continue without a camera. Exiting.")
+        sys.exit(1)
+
+    # Initialize optional features
+    data_logger = None
+    if FEATURE_DATA_LOGGING:
+        try:
+            from data_logger import DataLogger
+            data_logger = DataLogger()
+            print("Data logging ENABLED")
+        except ImportError:
+            print("WARNING: data_logger.py not found, logging disabled")
+
+    # Load modular sensors (pass shared serial connection to avoid port conflicts)
+    extra_sensors = []
+    if FEATURE_MODULAR_SENSORS:
+        try:
+            from sensors import load_all_sensors
+            extra_sensors = load_all_sensors(arduino_serial=arduino)
+        except ImportError:
+            print("WARNING: sensors package not found")
+
+    print()
+    print("Controls: [q]uit  [s]tart staining  [c]apture image  [r]eport")
+    print("-" * 60)
+
+    # Track latest sensor readings and last sent result (avoid flooding)
+    last_ph = 7.0
+    last_ec = 500.0
+    last_sent_result = ""
+
+    try:
+        while True:
+            # Read sensors from Arduino
+            if arduino:
+                ph, ec = read_arduino_sensors(arduino)
+                if ph is not None:
+                    last_ph = ph
+                    last_ec = ec
+
+            # Capture microscope frame
+            ret, frame = camera.read()
+            if not ret:
+                continue
+
+            # Classify bacteria
+            if model is not None:
+                bacteria_class, confidence = classify_image(model, frame)
+            else:
+                bacteria_class, confidence = classify_with_hsv(frame)
+
+            # Calculate risk
+            risk = calculate_risk(last_ph, last_ec, bacteria_class)
+
+            # Display on laptop screen
+            display_frame = frame.copy()
+
+            # Color-coded risk bar
+            risk_colors = {"LOW": (0, 200, 0), "MODERATE": (0, 165, 255), "HIGH": (0, 0, 255)}
+            color = risk_colors.get(risk, (255, 255, 255))
+
+            cv2.rectangle(display_frame, (0, 0), (display_frame.shape[1], 40), (0, 0, 0), -1)
+            cv2.putText(display_frame,
+                        f"{bacteria_class} ({confidence:.0%}) | Risk: {risk} | pH:{last_ph:.1f} EC:{last_ec:.0f}",
+                        (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+            cv2.imshow("AquaGuard - Live Feed", display_frame)
+
+            # Send result to Arduino LCD (only when it changes, to avoid flooding)
+            current_result = f"{bacteria_class},{risk}"
+            if arduino and bacteria_class not in ("No Model", "Uncertain") and current_result != last_sent_result:
+                try:
+                    arduino.write(f"RESULT:{current_result}\n".encode())
+                    last_sent_result = current_result
+                except Exception:
+                    pass
+
+            # Log data (if feature enabled)
+            if data_logger and bacteria_class not in ("No Model",):
+                data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk, frame)
+
+            # Handle keyboard input
+            key = cv2.waitKey(1000) & 0xFF  # 1 second delay between frames
+
+            if key == ord('q'):
+                print("\nShutting down AquaGuard...")
+                break
+            elif key == ord('s'):
+                # Send start staining command to Arduino
+                if arduino:
+                    print("\nStarting Gram stain sequence...")
+                    arduino.write(b"START\n")
+                else:
+                    print("\nNo Arduino connected — cannot start staining")
+            elif key == ord('c'):
+                # Capture and save current image
+                timestamp = time.strftime("%Y%m%d_%H%M%S")
+                filename = f"capture_{timestamp}.jpg"
+                filepath = os.path.join(PROJECT_ROOT, "results", "images", filename)
+                cv2.imwrite(filepath, frame)
+                print(f"\nImage saved: {filepath}")
+            elif key == ord('r'):
+                if FEATURE_PDF_REPORTS:
+                    try:
+                        from generate_report import generate_report
+                        generate_report()
+                    except ImportError:
+                        print("\ngenerate_report.py not found")
+                else:
+                    print("\nPDF reports disabled. Set FEATURE_PDF_REPORTS = True in config.py")
+            elif key == ord('l'):
+                if FEATURE_LEARNING_MODULES:
+                    print("\nLearning modules:")
+                    print("  1. python learning/learn_gram_staining.py")
+                    print("  2. python learning/learn_bacteria_shapes.py")
+                    print("  3. python learning/learn_how_ai_works.py")
+                    print("  4. python learning/learn_water_quality.py")
+                    print("  5. python learning/learn_risk_assessment.py")
+                else:
+                    print("\nLearning modules disabled. Set FEATURE_LEARNING_MODULES = True in config.py")
+
+    except KeyboardInterrupt:
+        print("\n\nInterrupted by user.")
+    finally:
+        # Clean up
+        if camera:
+            camera.release()
+        cv2.destroyAllWindows()
+        if arduino:
+            arduino.close()
+        print("AquaGuard shut down. Goodbye!")
+
+
+if __name__ == "__main__":
+    main()

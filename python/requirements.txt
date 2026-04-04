@@ -1,0 +1,19 @@
+# ============================================================
+# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# Python Dependencies
+# ============================================================
+# Install all at once:  pip install -r requirements.txt
+# ============================================================
+
+# --- CORE (required) ---
+opencv-python>=4.5.0          # Camera capture and image processing
+numpy>=1.20.0                  # Number crunching
+pyserial>=3.5                  # Arduino serial communication
+
+# --- AI MODEL (required for AI classification) ---
+tensorflow>=2.10.0             # Neural network model (MobileNetV2)
+
+# --- OPTIONAL (for extra features) ---
+scikit-learn>=1.0.0            # Feature extraction classifier (Option C)
+matplotlib>=3.5.0              # Charts in reports and learning modules
+fpdf2>=2.7.0                   # PDF report generation

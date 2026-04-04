@@ -1,0 +1,133 @@
+============================================================
+AquaGuard Wiring Diagram
+Original Author: Guillanne Marie Agreda
+============================================================
+
+ARDUINO MEGA 2560 PIN CONNECTIONS
+==================================
+
+SENSORS
+-------
+  pH Sensor (PH-4502C):
+    VCC  →  Arduino 5V
+    GND  →  Arduino GND
+    Po   →  Arduino A0 (analog output)
+
+  TDS/EC Sensor:
+    VCC  →  Arduino 5V
+    GND  →  Arduino GND
+    A    →  Arduino A1 (analog output)
+
+  (Optional) Temperature Sensor (DS18B20):
+    VCC (red)   →  Arduino 5V
+    GND (black) →  Arduino GND
+    DATA (yellow) → Arduino D7
+    + 4.7k ohm resistor between VCC and DATA
+
+  (Optional) Turbidity Sensor:
+    VCC  →  Arduino 5V
+    GND  →  Arduino GND
+    A    →  Arduino A3
+
+RELAY MODULES (2x 4-channel, active LOW)
+-----------------------------------------
+  Relay Module 1:
+    VCC  →  Arduino 5V
+    GND  →  Arduino GND
+    IN1  →  Arduino D2  (Crystal Violet valve)
+    IN2  →  Arduino D3  (Iodine valve)
+    IN3  →  Arduino D4  (Decolorizer valve)
+    IN4  →  Arduino D5  (Safranin valve)
+
+  Relay Module 2:
+    VCC  →  Arduino 5V
+    GND  →  Arduino GND
+    IN1  →  Arduino D6  (DI Water valve)
+    IN2  →  Arduino D7  (Peristaltic pump)
+    IN3  →  (spare)
+    IN4  →  (spare)
+
+  Each relay output connects to a 12V solenoid valve or pump:
+    Relay COM   →  12V power supply (+)
+    Relay NO    →  Solenoid valve (+)
+    Solenoid(-) →  12V power supply (-)
+    + 1N4007 flyback diode across each solenoid (cathode to +)
+
+LCD DISPLAY (20x4 I2C)
+-----------------------
+  VCC  →  Arduino 5V
+  GND  →  Arduino GND
+  SDA  →  Arduino SDA (pin 20 on Mega)
+  SCL  →  Arduino SCL (pin 21 on Mega)
+
+  I2C Address: 0x27 (if LCD doesn't work, try 0x3F)
+
+START BUTTON (optional)
+-----------------------
+  One pin  →  Arduino D8
+  Other pin → Arduino GND
+  (Uses internal pullup resistor — no external resistor needed)
+
+POWER
+-----
+  Arduino Mega:
+    Powered via USB from laptop (also provides serial communication)
+
+  12V Components (valves + pump):
+    12V 5A DC power supply
+    (+) → Relay module COM terminals
+    (-) → Common ground with solenoid/pump negatives
+    IMPORTANT: Connect 12V GND to Arduino GND (common ground)
+
+
+FLUID CONNECTIONS (Silicone Tubing 3x5mm)
+==========================================
+
+  Reagent Bottles (5):
+    [Crystal Violet] → Solenoid Valve 1 ─┐
+    [Iodine]         → Solenoid Valve 2 ─┤
+    [Decolorizer]    → Solenoid Valve 3 ─┼→ Common Manifold → Peristaltic Pump → Flow Cell Inlet
+    [Safranin]        → Solenoid Valve 4 ─┤
+    [DI Water]       → Solenoid Valve 5 ─┘
+
+  Flow Cell:
+    Inlet ← from peristaltic pump
+    Outlet → Waste container
+
+  Flow Cell Construction:
+    - 2 glass microscope slides
+    - Separated by double-sided tape (200-500 um gap)
+    - Inlet/outlet: small holes or gaps in the tape
+    - Sealed edges with epoxy or silicone
+    - Place on microscope stage for observation
+
+
+COMPLETE SYSTEM DIAGRAM
+========================
+
+  [Water Sample]
+       |
+  [Pre-Filter] ← inline sediment filter
+       |
+  [Sensor Chamber] ← pH probe + TDS probe in the water
+       |
+  [Solenoid Valves] ← controlled by Arduino via relays
+       |
+  [Peristaltic Pump] ← pulls fluid through the system
+       |
+  [Flow Cell / Staining Chamber] ← on microscope stage
+       |
+  [Microscope + USB Camera] → Laptop (Python + AI)
+       |
+  [Arduino LCD] ← receives classification result
+       |
+  [Risk Level: LOW / MODERATE / HIGH]
+
+
+SAFETY NOTES
+=============
+  - NEVER connect 12V directly to Arduino pins (only through relay)
+  - Always use flyback diodes (1N4007) across solenoid valves
+  - Keep 12V and 5V power supplies separate (only share GND)
+  - Double-check all connections before powering on
+  - Disconnect power before changing wiring

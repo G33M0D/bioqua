@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+venv_local/
+
+# AI Models (too large for git)
+models/*.h5
+models/*.tflite
+models/*.pkl
+!models/.gitkeep
+
+# Training data (images — too large for git)
+training_data/**/*.jpg
+training_data/**/*.jpeg
+training_data/**/*.png
+training_data/**/*.bmp
+!training_data/*/.gitkeep
+
+# Test results and logs
+results/test_log.csv
+results/images/
+results/reports/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.key
