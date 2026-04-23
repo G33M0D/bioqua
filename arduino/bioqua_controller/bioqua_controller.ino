@@ -1,16 +1,16 @@
 // ============================================================
-// AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+// BIOQUA: AI-Assisted Water Quality Monitoring System
 //
-// Original Author : Guillanne Marie Agreda
+// Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 // Year            : 2026
 // License         : MIT License
 //
-// This project is the original work of the author.
+// This project is the original work of the authors.
 // Unauthorized removal of this notice is prohibited.
 // ============================================================
 
 /*
- * AquaGuard Arduino Controller
+ * BIOQUA Arduino Controller
  * ============================
  * This sketch runs on Arduino Mega 2560 and handles:
  *   1. Reading pH and EC sensors
@@ -107,7 +107,7 @@ void setup() {
     lcd.backlight();
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("=== AquaGuard ===");
+    lcd.print("=== BIOQUA ===");
     lcd.setCursor(0, 1);
     lcd.print("System Ready");
     lcd.setCursor(0, 2);
@@ -115,7 +115,7 @@ void setup() {
     lcd.setCursor(0, 3);
     lcd.print("send 'S' via Serial");
 
-    Serial.println("AQUAGUARD_READY");
+    Serial.println("BIOQUA_READY");
 }
 
 // ─── MAIN LOOP ───────────────────────────────────────────────
@@ -344,5 +344,5 @@ void displayResult(float pH, float ec, String result) {
     lcd.print(risk);
 
     lcd.setCursor(0, 3);
-    lcd.print("=== AquaGuard ===");
+    lcd.print("=== BIOQUA ===");
 }

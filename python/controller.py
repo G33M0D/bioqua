@@ -1,16 +1,16 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
 """
-AquaGuard Controller — The Brain
+BIOQUA Controller — The Brain
 =================================
 This is the main script that runs on your laptop. It:
   1. Connects to the Arduino via USB serial
@@ -105,7 +105,7 @@ def connect_arduino():
         # Wait for ready signal
         for _ in range(10):
             line = arduino.readline().decode('utf-8', errors='ignore').strip()
-            if line == "AQUAGUARD_READY":
+            if line == "BIOQUA_READY":
                 print("Arduino is ready!")
                 return arduino
             elif line:
@@ -294,7 +294,7 @@ def read_arduino_sensors(arduino):
         elif line == "STAINING_DONE":
             print("  Arduino: Staining complete — ready for classification")
             return "STAINING_DONE", None
-        elif line.startswith(("STEP:", "STAINING", "AQUAGUARD", "STATUS:")):
+        elif line.startswith(("STEP:", "STAINING", "BIOQUA", "STATUS:")):
             print(f"  Arduino: {line}")
             return None, None
 
@@ -313,8 +313,8 @@ def read_arduino_sensors(arduino):
 def main():
     """Main control loop."""
     print("=" * 60)
-    print("  AquaGuard: AI-Powered Bacteria Detection")
-    print("  Original Author: Guillanne Marie Agreda")
+    print("  BIOQUA: AI-Assisted Water Quality Monitoring")
+    print("  Authors: Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.")
     print("=" * 60)
     print()
 
@@ -385,10 +385,10 @@ def main():
                 cv2.rectangle(display_frame, (0, 0), (display_frame.shape[1], 40), (0, 0, 0), -1)
                 cv2.putText(display_frame, "Staining in progress... please wait",
                             (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 200, 255), 2)
-                cv2.imshow("AquaGuard - Live Feed", display_frame)
+                cv2.imshow("BIOQUA - Live Feed", display_frame)
                 key = cv2.waitKey(100) & 0xFF
                 if key == ord('q'):
-                    print("\nShutting down AquaGuard...")
+                    print("\nShutting down BIOQUA...")
                     break
                 continue
 
@@ -417,7 +417,7 @@ def main():
                 cv2.putText(display_frame, "NO SENSOR — demo mode (values are defaults)",
                             (10, 46), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
 
-            cv2.imshow("AquaGuard - Live Feed", display_frame)
+            cv2.imshow("BIOQUA - Live Feed", display_frame)
 
             # Check if classification result changed
             current_result = f"{bacteria_class},{risk}"
@@ -445,7 +445,7 @@ def main():
             key = cv2.waitKey(100) & 0xFF  # 100ms between frames for responsive UI
 
             if key == ord('q'):
-                print("\nShutting down AquaGuard...")
+                print("\nShutting down BIOQUA...")
                 break
             elif key == ord('s'):
                 # Send start staining command to Arduino
@@ -476,7 +476,7 @@ def main():
                     print("\nPDF reports disabled. Set FEATURE_PDF_REPORTS = True in config.py")
             elif key == ord('l'):
                 if FEATURE_LEARNING_MODULES:
-                    print("\nLearning modules (run from the aquaguard/ folder):")
+                    print("\nLearning modules (run from the bioqua/ folder):")
                     print("  1. python learning/learn_gram_staining.py")
                     print("  2. python learning/learn_bacteria_shapes.py")
                     print("  3. python learning/learn_how_ai_works.py")
@@ -494,7 +494,7 @@ def main():
         cv2.destroyAllWindows()
         if arduino:
             arduino.close()
-        print("AquaGuard shut down. Goodbye!")
+        print("BIOQUA shut down. Goodbye!")
 
 
 if __name__ == "__main__":

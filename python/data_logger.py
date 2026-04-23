@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 

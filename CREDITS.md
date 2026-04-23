@@ -1,16 +1,20 @@
-# AquaGuard Credits
+# BIOQUA Credits
 
-## Original Author
+## Authors
 
-**Guillanne Marie Agreda**
+- **Agreda, G.M.** — Guillanne Marie Agreda _(code author)_
+- **Joven, C.L.**
+- **Mendez, A.V.**
+- **Tangao, W.**
+- **Zamora, G.D.**
 
-AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+BIOQUA: Development of an AI-Assisted Arduino-Based Water Monitoring System for Gram Stain, pH level, and Mineral Detection for Water Chemical Analysis
 
 Year: 2026
 
 ## Project Description
 
-AquaGuard is an automated water quality monitoring system that uses Arduino
+BIOQUA is an automated water quality monitoring system that uses Arduino
 sensors, automated Gram staining, digital microscopy, and AI image
 classification to detect and classify bacteria in water samples. The system
 outputs a water quality risk level (Low/Moderate/High) based on combined

@@ -1,12 +1,12 @@
-# AquaGuard Project Manual
+# BIOQUA Project Manual
 
-**AI-Powered Bacteria Detection for Safe Drinking Water**
+**AI-Assisted Water Quality Monitoring System**
 
-Original Author: Guillanne Marie Agreda | Year: 2026
+Authors: Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D. | Year: 2026
 
 ---
 
-This manual is your complete guide to setting up, running, customizing, and troubleshooting AquaGuard. It also includes a section to help you write your science research report.
+This manual is your complete guide to setting up, running, customizing, and troubleshooting BIOQUA. It also includes a section to help you write your science research report.
 
 **How to use this manual:**
 
@@ -40,7 +40,7 @@ This manual is your complete guide to setting up, running, customizing, and trou
 - [Part 3 -- Troubleshooting FAQ](#part-3--troubleshooting-faq)
 - [Part 4 -- Science Report Helper](#part-4--science-report-helper)
   - [What Is AI?](#what-is-ai)
-  - [How AquaGuard's AI Sees Bacteria](#how-aquaguards-ai-sees-bacteria)
+  - [How BIOQUA's AI Sees Bacteria](#how-bioquas-ai-sees-bacteria)
   - [What Is Transfer Learning?](#what-is-transfer-learning)
   - [What Is Gram Staining?](#what-is-gram-staining)
   - [How to Present Accuracy (Confusion Matrix)](#how-to-present-accuracy-confusion-matrix)
@@ -58,7 +58,7 @@ Read each step carefully. Do them in order. Do not skip ahead.
 
 ## Step 1: Install Python 3
 
-Python is the programming language that runs AquaGuard's brain on your laptop. The Arduino handles the hardware, but all the AI, camera work, and analysis happens in Python.
+Python is the programming language that runs BIOQUA's brain on your laptop. The Arduino handles the hardware, but all the AI, camera work, and analysis happens in Python.
 
 ### On Windows
 
@@ -111,7 +111,7 @@ The exact number doesn't matter as long as it starts with `3`.
 
 ## Step 2: Install Arduino IDE
 
-The Arduino IDE is the program you use to write code to the Arduino Mega board. You only need it to upload the AquaGuard sketch once.
+The Arduino IDE is the program you use to write code to the Arduino Mega board. You only need it to upload the BIOQUA sketch once.
 
 1. Open your web browser and go to **https://www.arduino.cc/en/software**
 2. Scroll down to **"Download Options"**
@@ -148,7 +148,7 @@ void loop() {
 
 ## Step 3: Install Arduino Libraries
 
-Libraries are pre-written code that makes it easier to talk to specific hardware. AquaGuard needs two libraries.
+Libraries are pre-written code that makes it easier to talk to specific hardware. BIOQUA needs two libraries.
 
 ### Library 1: LiquidCrystal I2C (Required)
 
@@ -182,7 +182,7 @@ After installing, if you go to **Sketch > Include Library**, you should see "Liq
 
 ## Step 4: Install Python Packages
 
-AquaGuard needs several Python packages (think of them as tools that Python downloads from the internet). Open a terminal (Command Prompt on Windows, Terminal on Mac) and run this command:
+BIOQUA needs several Python packages (think of them as tools that Python downloads from the internet). Open a terminal (Command Prompt on Windows, Terminal on Mac) and run this command:
 
 ```
 pip install opencv-python numpy tensorflow pyserial scikit-learn
@@ -281,7 +281,7 @@ The Arduino sketch is the code that runs on the Arduino itself. It reads sensors
 
 1. Open Arduino IDE
 2. Go to **File > Open**
-3. Navigate to your AquaGuard project folder and open: `arduino/aquaguard_controller/aquaguard_controller.ino`
+3. Navigate to your BIOQUA project folder and open: `arduino/bioqua_controller/bioqua_controller.ino`
 4. Plug in the Arduino Mega to your laptop with a USB cable
 5. In Arduino IDE, go to **Tools > Board** and select **"Arduino Mega or Mega 2560"**
    - If you don't see it, go to **Tools > Board > Boards Manager**, search for "Arduino AVR Boards", and install it
@@ -305,7 +305,7 @@ avrdude done. Thank you.
 And on the physical LCD screen attached to the Arduino:
 
 ```
-=== AquaGuard ===
+=== BIOQUA ===
 System Ready
 Press START or
 send 'S' via Serial
@@ -329,9 +329,9 @@ Before running the full system, let's make sure your laptop can see the USB micr
 2. Open a terminal (Command Prompt on Windows, Terminal on Mac)
 3. Navigate to the project's python folder:
    ```
-   cd path/to/aquaguard/python
+   cd path/to/bioqua/python
    ```
-   (Replace `path/to/aquaguard` with wherever you saved the project -- for example, `cd C:\Users\YourName\Documents\aquaguard\python` on Windows or `cd ~/Documents/aquaguard/python` on Mac)
+   (Replace `path/to/bioqua` with wherever you saved the project -- for example, `cd C:\Users\YourName\Documents\bioqua\python` on Windows or `cd ~/Documents/bioqua/python` on Mac)
 4. Run:
    ```
    python test_camera.py
@@ -343,7 +343,7 @@ In the terminal:
 
 ```
 ==================================================
-  AquaGuard Camera Test
+  BIOQUA Camera Test
 ==================================================
 
 Testing camera indices 0, 1, 2...
@@ -390,7 +390,7 @@ This test checks whether your laptop can communicate with the Arduino.
 
 ```
 ==================================================
-  AquaGuard Serial Test
+  BIOQUA Serial Test
 ==================================================
 
 Available serial ports:
@@ -401,7 +401,7 @@ Connected!
 
 Reading sensor data (press Ctrl+C to stop):
 --------------------------------------------------
-  Arduino: AQUAGUARD_READY
+  Arduino: BIOQUA_READY
   pH: 7.02  |  EC: 485.3 uS/cm
   pH: 7.01  |  EC: 486.1 uS/cm
 ```
@@ -424,7 +424,7 @@ If the serial port is wrong, the test will show you all available ports and tell
 
 ## Step 9: Run the Full System
 
-Everything is connected and tested. Time to run AquaGuard.
+Everything is connected and tested. Time to run BIOQUA.
 
 1. Make sure:
    - Arduino is plugged in and the sketch is uploaded
@@ -439,11 +439,11 @@ Everything is connected and tested. Time to run AquaGuard.
 
 ```
 ============================================================
-  AquaGuard: AI-Powered Bacteria Detection
-  Original Author: Guillanne Marie Agreda
+  BIOQUA: AI-Assisted Water Quality Monitoring
+  Authors: Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 ============================================================
 
-WARNING: No AI model found at .../models/aquaguard_model.h5
+WARNING: No AI model found at .../models/bioqua_model.h5
 The system will run without AI classification.
 Arduino connected on COM3
 Arduino is ready!
@@ -461,7 +461,7 @@ A video window will appear showing the live microscope feed. At the top of the v
 
 | Key | What It Does |
 |-----|-------------|
-| `q` | Quit AquaGuard |
+| `q` | Quit BIOQUA |
 | `s` | Start the automated Gram staining sequence |
 | `c` | Capture and save the current microscope image |
 | `r` | Generate a PDF report (only if PDF reports are enabled) |
@@ -533,7 +533,7 @@ Open it in any text editor (Notepad on Windows, TextEdit on Mac, or any code edi
 | `SERIAL_PORT` | `"COM3"` | Which USB port the Arduino is connected to |
 | `SERIAL_BAUD` | `9600` | Communication speed with Arduino (don't change this unless you also change it in the Arduino sketch) |
 | `CAMERA_INDEX` | `0` | Which camera to use (0 = first camera, 1 = second, etc.) |
-| `AI_MODEL_PATH` | `models/aquaguard_model.h5` | Where the trained AI model file is saved |
+| `AI_MODEL_PATH` | `models/bioqua_model.h5` | Where the trained AI model file is saved |
 | `CLASS_NAMES` | 5 bacteria classes | The names of bacteria types the AI can recognize |
 
 ### Sensor Thresholds
@@ -635,7 +635,7 @@ The serial port name is different on every computer. Here is how to find yours:
 
 ## Feature Toggles
 
-AquaGuard has optional features that are all turned OFF by default. Turn them on one at a time when you're ready.
+BIOQUA has optional features that are all turned OFF by default. Turn them on one at a time when you're ready.
 
 | Feature | Setting | What It Adds |
 |---------|---------|-------------|
@@ -659,7 +659,7 @@ FEATURE_DATA_LOGGING = True
 
 ## How to Add New Bacteria Classes
 
-If you want AquaGuard to recognize additional types of bacteria:
+If you want BIOQUA to recognize additional types of bacteria:
 
 1. **Create a new folder** in `training_data/` with a descriptive name (e.g., `spirillum` or `filamentous`)
 2. **Collect images** of that bacteria type (at least 30 images, ideally 50+):
@@ -690,7 +690,7 @@ If you want AquaGuard to recognize additional types of bacteria:
    python train_model.py
    ```
 3. Training takes 5-15 minutes. When it finishes, you will see the accuracy percentage.
-4. The new model is saved to `models/aquaguard_model.h5` and will be used automatically next time you run `controller.py`
+4. The new model is saved to `models/bioqua_model.h5` and will be used automatically next time you run `controller.py`
 
 ### Option B: Train with Google Teachable Machine (easier, visual)
 
@@ -700,7 +700,7 @@ If you want AquaGuard to recognize additional types of bacteria:
 4. Upload your training images into each class
 5. Click **"Train Model"** (this happens in your browser, no install needed)
 6. After training, click **"Export Model"** > **"TensorFlow"** > **"Keras"** > **"Download"**
-7. Unzip the download and copy the `.h5` file to `models/aquaguard_model.h5` (replacing the old one)
+7. Unzip the download and copy the `.h5` file to `models/bioqua_model.h5` (replacing the old one)
 
 ### Option C: Train the feature extraction classifier (most explainable)
 
@@ -713,28 +713,28 @@ This method is the best for your science report because you can explain exactly 
    ```
 3. This trains a Random Forest classifier on 5 measurable features (purple ratio, pink ratio, circularity, aspect ratio, bacteria count)
 4. The output will show you exactly how important each feature is
-5. The model is saved to `models/aquaguard_features_model.pkl`
+5. The model is saved to `models/bioqua_features_model.pkl`
 
 ---
 
 ## How to Switch Between AI Options
 
-AquaGuard has three ways to classify bacteria, from simplest to most advanced:
+BIOQUA has three ways to classify bacteria, from simplest to most advanced:
 
 | Method | When It's Used | Best For |
 |--------|---------------|----------|
 | **HSV Color Detection** | Automatically used when no AI model exists | Quick testing, understanding the basics |
-| **Feature Extraction (Random Forest)** | When `aquaguard_features_model.pkl` exists | Science reports (fully explainable) |
-| **Deep Learning (MobileNetV2)** | When `aquaguard_model.h5` exists | Best accuracy |
+| **Feature Extraction (Random Forest)** | When `bioqua_features_model.pkl` exists | Science reports (fully explainable) |
+| **Deep Learning (MobileNetV2)** | When `bioqua_model.h5` exists | Best accuracy |
 
 The controller automatically uses the deep learning model if it exists. To force it to use HSV-only detection, temporarily rename or move the model file:
 
 ```
 # On Windows:
-ren models\aquaguard_model.h5 models\aquaguard_model.h5.bak
+ren models\bioqua_model.h5 models\bioqua_model.h5.bak
 
 # On Mac/Linux:
-mv models/aquaguard_model.h5 models/aquaguard_model.h5.bak
+mv models/bioqua_model.h5 models/bioqua_model.h5.bak
 ```
 
 To use the feature extraction classifier instead, you would modify `controller.py` to load the `.pkl` model -- but for most purposes, just use `feature_extraction.py` directly for analysis and reporting.
@@ -818,7 +818,7 @@ Find your problem below and follow the fix.
 **Try this:**
 
 1. **Adjust the contrast potentiometer.** On the back of the I2C adapter board, there is a small blue screw (potentiometer). Turn it slowly with a small screwdriver until text appears.
-2. **Check the I2C address.** Open `arduino/aquaguard_controller/aquaguard_controller.ino` and look for this line:
+2. **Check the I2C address.** Open `arduino/bioqua_controller/bioqua_controller.ino` and look for this line:
    ```
    LiquidCrystal_I2C lcd(0x27, 20, 4);
    ```
@@ -871,13 +871,13 @@ If `pip install` doesn't seem to work (you install it but the error persists):
    - `ConnectionRefusedError` or `SerialException`: The Arduino isn't connected or the port is in use.
    - `ValueError`: A calculation got unexpected data. Usually means a sensor returned garbage.
 3. **Copy the last line of the error and search for it online.** Paste it into Google with "Python" in front of it. Someone has almost certainly had the same problem.
-4. **Check that you are in the right folder.** Make sure your terminal is in the `python/` folder within the AquaGuard project when running commands.
+4. **Check that you are in the right folder.** Make sure your terminal is in the `python/` folder within the BIOQUA project when running commands.
 
 ---
 
 # Part 4 -- Science Report Helper
 
-This section explains the science and technology behind AquaGuard in plain language. Use it to help write your research paper or presentation.
+This section explains the science and technology behind BIOQUA in plain language. Use it to help write your research paper or presentation.
 
 ---
 
@@ -893,11 +893,11 @@ You already use AI every day, probably without realizing it:
 
 All of these work the same way: the computer is given many examples, it finds patterns, and then it uses those patterns to make decisions about new data it hasn't seen before.
 
-AquaGuard's AI works the same way. Instead of emails or faces, it learned from microscope images. It studied hundreds of pictures of different bacteria types and learned: "purple and round = Gram-positive cocci," "pink and rod-shaped = Gram-negative bacilli," and so on. Now when it sees a new microscope image, it can classify the bacteria.
+BIOQUA's AI works the same way. Instead of emails or faces, it learned from microscope images. It studied hundreds of pictures of different bacteria types and learned: "purple and round = Gram-positive cocci," "pink and rod-shaped = Gram-negative bacilli," and so on. Now when it sees a new microscope image, it can classify the bacteria.
 
 ---
 
-## How AquaGuard's AI Sees Bacteria
+## How BIOQUA's AI Sees Bacteria
 
 The AI does not "see" the way humans do. It sees numbers.
 
@@ -905,9 +905,9 @@ The AI does not "see" the way humans do. It sees numbers.
 
 Imagine you have a bowl of M&Ms and someone asks you to sort them by color. You would look at each M&M and put it in a pile: red, blue, green, yellow, etc.
 
-AquaGuard does the same thing, but with pixels instead of M&Ms.
+BIOQUA does the same thing, but with pixels instead of M&Ms.
 
-A microscope image is made up of thousands of tiny colored squares called pixels. Each pixel has a color described by three numbers (Hue, Saturation, Value). AquaGuard counts how many pixels fall into the "purple" range and how many fall into the "pink" range:
+A microscope image is made up of thousands of tiny colored squares called pixels. Each pixel has a color described by three numbers (Hue, Saturation, Value). BIOQUA counts how many pixels fall into the "purple" range and how many fall into the "pink" range:
 
 - **Lots of purple pixels?** That means Crystal Violet stain was retained -- Gram-positive bacteria.
 - **Lots of pink pixels?** That means the Crystal Violet washed away and Safranin was picked up -- Gram-negative bacteria.
@@ -917,11 +917,11 @@ This is exactly like sorting M&Ms: count the purple ones and count the pink ones
 
 ### Shape Detection -- Circles vs Rectangles
 
-After determining the color (Gram type), AquaGuard looks at the shapes of the bacteria.
+After determining the color (Gram type), BIOQUA looks at the shapes of the bacteria.
 
 Think of it like this: if someone draws shapes on a whiteboard and asks you "is it a circle or a rectangle?", you would look at how round versus how stretched-out it is.
 
-AquaGuard does the same thing with two measurements:
+BIOQUA does the same thing with two measurements:
 
 - **Circularity** (0 to 1): How close to a perfect circle is the shape? A perfect circle scores 1.0. A long thin rod scores closer to 0.3. Bacteria that score above 0.7 are classified as **cocci** (round bacteria like Staphylococcus).
 - **Aspect Ratio**: Width divided by height. A square = 1.0. A shape that is 3 times wider than it is tall = 3.0. Bacteria with aspect ratio above 2.0 are classified as **bacilli** (rod-shaped bacteria like E. coli).
@@ -938,9 +938,9 @@ Transfer learning is the shortcut.
 
 Imagine you have a dog that already knows how to sit, stay, and shake. If you want to teach it a new trick -- say, rolling over -- you don't start from zero. The dog already understands commands, rewards, and body movements. Teaching it one new thing is much faster than training a puppy that knows nothing.
 
-Transfer learning works the same way. AquaGuard uses a model called **MobileNetV2** that was already trained on 1.4 million photographs. It already learned what edges, colors, textures, and shapes look like. It "knows" the basics of seeing.
+Transfer learning works the same way. BIOQUA uses a model called **MobileNetV2** that was already trained on 1.4 million photographs. It already learned what edges, colors, textures, and shapes look like. It "knows" the basics of seeing.
 
-All AquaGuard does is add a small new layer on top and teach it: "these particular colors and shapes mean Gram-positive cocci." Because the foundation is already solid, AquaGuard only needs 30-50 images per class instead of millions.
+All BIOQUA does is add a small new layer on top and teach it: "these particular colors and shapes mean Gram-positive cocci." Because the foundation is already solid, BIOQUA only needs 30-50 images per class instead of millions.
 
 **In your report, you can say:**
 > "The system uses transfer learning with a pre-trained MobileNetV2 convolutional neural network. The base model, trained on the ImageNet dataset (1.4 million images), provides general visual feature extraction. A custom classification head was added and fine-tuned on our bacteria image dataset."
@@ -1012,7 +1012,7 @@ Don't just report the overall accuracy number. Explain the trade-offs:
 Here is a recommended outline for your science research paper or investigatory project report.
 
 ### I. Title
-> AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+> BIOQUA: AI-Assisted Water Quality Monitoring System
 
 ### II. Abstract (1 paragraph, ~150 words)
 Summarize the problem, your approach, and your main results. Write this last.
@@ -1063,7 +1063,7 @@ Use these terms correctly in your report.
 | **Transfer Learning** | A technique where a model trained on a large general dataset is adapted for a specific task using a smaller dataset |
 | **Convolutional Neural Network (CNN)** | A type of deep learning model designed for image recognition that detects features like edges, colors, and shapes |
 | **MobileNetV2** | A lightweight CNN architecture designed by Google for mobile and embedded devices |
-| **Classification** | The task of assigning a label (category) to an input. In AquaGuard, the input is a microscope image and the labels are bacteria types |
+| **Classification** | The task of assigning a label (category) to an input. In BIOQUA, the input is a microscope image and the labels are bacteria types |
 | **Confidence Score** | A number from 0% to 100% representing how certain the AI is about its classification |
 | **HSV Color Space** | A way of representing colors using Hue (what color), Saturation (how vivid), and Value (how bright). Used in computer vision because it separates color from brightness |
 | **Contour** | The outline of a shape detected in an image. Used to measure circularity and aspect ratio |
@@ -1089,7 +1089,7 @@ Use these terms correctly in your report.
 | **Serial Communication** | A method of sending data one bit at a time over a wire. The Arduino and laptop communicate over USB serial at 9600 baud |
 | **Relay Module** | An electrically operated switch that allows a low-power signal (Arduino 5V) to control a high-power device (12V solenoid valve) |
 | **Solenoid Valve** | An electronically controlled valve that opens or closes when electrical current flows through it |
-| **Peristaltic Pump** | A pump that moves fluid by squeezing a flexible tube. Used in AquaGuard to move water and reagents without contamination |
+| **Peristaltic Pump** | A pump that moves fluid by squeezing a flexible tube. Used in BIOQUA to move water and reagents without contamination |
 
 ---
 
@@ -1101,7 +1101,7 @@ These are example sentences you can modify for your own report. Replace the brac
 
 > "According to the World Health Organization, approximately 2 billion people worldwide use a drinking water source contaminated with feces (WHO, 2019). Traditional laboratory testing for bacterial contamination requires trained technicians and equipment costing thousands of dollars, making it inaccessible in many developing communities."
 
-> "This study developed AquaGuard, a low-cost automated system that combines Arduino-controlled hardware with artificial intelligence to detect and classify bacteria in water samples."
+> "This study developed BIOQUA, a low-cost automated system that combines Arduino-controlled hardware with artificial intelligence to detect and classify bacteria in water samples."
 
 ### For the Methodology
 
@@ -1129,7 +1129,7 @@ These are example sentences you can modify for your own report. Replace the brac
 
 ### For the Conclusion
 
-> "AquaGuard demonstrates that AI-powered bacteria detection is feasible using low-cost hardware. The total material cost of approximately [amount] is significantly less than traditional laboratory equipment, suggesting potential applicability in resource-limited settings."
+> "BIOQUA demonstrates that AI-powered bacteria detection is feasible using low-cost hardware. The total material cost of approximately [amount] is significantly less than traditional laboratory equipment, suggesting potential applicability in resource-limited settings."
 
 > "Future improvements could include adding additional bacteria classes, implementing real-time model updates through continued learning, and developing a mobile application for field use."
 

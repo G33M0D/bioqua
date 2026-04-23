@@ -1,6 +1,6 @@
 ============================================================
-AquaGuard Wiring Diagram
-Original Author: Guillanne Marie Agreda
+BIOQUA Wiring Diagram
+Authors: Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 ============================================================
 
 ARDUINO MEGA 2560 PIN CONNECTIONS

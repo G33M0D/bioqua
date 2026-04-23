@@ -1,8 +1,8 @@
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: Development of an AI-Assisted Arduino-Based Water Monitoring System for Gram Stain, pH level, and Mineral Detection for Water Chemical Analysis
 
-**Original Author: Guillanne Marie Agreda | 2026**
+**Authors:** Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D. | 2026
 
-AquaGuard is an automated water quality monitoring system that detects and classifies bacteria in water samples using Arduino sensors, automated Gram staining, digital microscopy, and AI image classification.
+BIOQUA is an automated water quality monitoring system that detects and classifies bacteria in water samples using Arduino sensors, automated Gram staining, digital microscopy, and AI image classification.
 
 ## How It Works
 
@@ -23,7 +23,7 @@ Water Sample → Pre-Filter → pH/EC Sensors → Automated Gram Staining → Mi
 pip install -r python/requirements.txt
 
 # 2. Upload Arduino sketch
-#    Open arduino/aquaguard_controller/aquaguard_controller.ino in Arduino IDE
+#    Open arduino/bioqua_controller/bioqua_controller.ino in Arduino IDE
 #    Select Board: Arduino Mega 2560, select Port, click Upload
 
 # 3. Test hardware
@@ -36,7 +36,7 @@ python python/capture_images.py   # Press 1-5 to save images per class
 # 5. Train AI model
 python python/train_model.py      # OR use Google Teachable Machine
 
-# 6. Run AquaGuard
+# 6. Run BIOQUA
 python python/controller.py       # Main system
 ```
 
@@ -56,7 +56,7 @@ All features are OFF by default. Enable them one at a time in `python/config.py`
 ## Project Structure
 
 ```
-aquaguard/
+bioqua/
 ├── arduino/          # Arduino Mega sketch
 ├── python/           # Python scripts (controller, training, config)
 ├── sensors/          # Modular sensor plugins

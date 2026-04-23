@@ -1,11 +1,11 @@
 // ============================================================
-// AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+// BIOQUA: AI-Assisted Water Quality Monitoring System
 //
-// Original Author : Guillanne Marie Agreda
+// Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 // Year            : 2026
 // License         : MIT License
 //
-// This project is the original work of the author.
+// This project is the original work of the authors.
 // Unauthorized removal of this notice is prohibited.
 // ============================================================
 
@@ -122,7 +122,7 @@ void updateLCD(float ph, float ec) {
   static bool titleDrawn = false;
   if (!titleDrawn) {
     lcd.setCursor(0, 0);
-    lcd.print("== AquaGuard v1.0 ==");
+    lcd.print("== BIOQUA v1.0 ==");
     titleDrawn = true;
   }
 
@@ -149,20 +149,20 @@ void updateLCD(float ph, float ec) {
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("AquaGuard ESP32 starting...");
+  Serial.println("BIOQUA ESP32 starting...");
 
   // Initialise Bluetooth
-  if (!SerialBT.begin("AquaGuard-ESP32")) {
+  if (!SerialBT.begin("BIOQUA-ESP32")) {
     Serial.println("Bluetooth init failed!");
     while (true) { delay(1000); }
   }
-  Serial.println("Bluetooth ready — device name: AquaGuard-ESP32");
+  Serial.println("Bluetooth ready — device name: BIOQUA-ESP32");
 
   // Initialise LCD
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0, 0);
-  lcd.print("== AquaGuard v1.0 ==");
+  lcd.print("== BIOQUA v1.0 ==");
   lcd.setCursor(0, 1);
   lcd.print("Waiting for BT...");
 

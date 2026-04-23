@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -16,7 +16,7 @@ Run this to check if the laptop can talk to the Arduino.
 It will show sensor readings (pH and EC) from the Arduino.
 
 BEFORE RUNNING:
-  1. Upload aquaguard_controller.ino to the Arduino
+  1. Upload bioqua_controller.ino to the Arduino
   2. Plug in the Arduino via USB
 
 HOW TO RUN:
@@ -64,7 +64,7 @@ def list_ports():
 
 def main():
     print("=" * 50)
-    print("  AquaGuard Serial Test")
+    print("  BIOQUA Serial Test")
     print("=" * 50)
     print()
 
@@ -93,7 +93,7 @@ def main():
         while True:
             line = arduino.readline().decode('utf-8', errors='ignore').strip()
             if line:
-                if ',' in line and not line.startswith(('STEP:', 'STAINING', 'AQUAGUARD', 'STATUS:')):
+                if ',' in line and not line.startswith(('STEP:', 'STAINING', 'BIOQUA', 'STATUS:')):
                     try:
                         parts = line.split(',')
                         ph = float(parts[0])

@@ -1,6 +1,6 @@
-# Contributing to AquaGuard
+# Contributing to BIOQUA
 
-Thank you for your interest in improving AquaGuard!
+Thank you for your interest in improving BIOQUA!
 
 ## How to Contribute
 
@@ -13,7 +13,7 @@ Thank you for your interest in improving AquaGuard!
 ## Rules
 
 - **Keep the credit header** — every `.py` and `.ino` file must include the
-  Guillanne Marie Agreda credit header at the top. Run `python python/verify_credits.py`
+  BIOQUA co-author credit header at the top. Run `python python/verify_credits.py`
   to check.
 - **One feature per PR** — keep pull requests focused
 - **Test before submitting** — make sure the existing system still works

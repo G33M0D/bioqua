@@ -1,6 +1,6 @@
-# AquaGuard Mobile Bluetooth Dashboard
+# BIOQUA Mobile Bluetooth Dashboard
 
-This guide covers two ways to view AquaGuard sensor data on your phone:
+This guide covers two ways to view BIOQUA sensor data on your phone:
 
 1. **MIT App Inventor** -- build a custom dashboard app (recommended for the full project)
 2. **Serial Bluetooth Terminal** -- quick testing with no coding required
@@ -11,7 +11,7 @@ This guide covers two ways to view AquaGuard sensor data on your phone:
 
 - ESP32 board flashed with `esp32_bluetooth.ino`
 - Android phone with Bluetooth (Classic/SPP, not just BLE)
-- The ESP32 must be powered on and advertising as **AquaGuard-ESP32**
+- The ESP32 must be powered on and advertising as **BIOQUA-ESP32**
 
 ---
 
@@ -21,7 +21,7 @@ This guide covers two ways to view AquaGuard sensor data on your phone:
 
 1. Go to [appinventor.mit.edu](https://appinventor.mit.edu)
 2. Sign in with a Google account
-3. Click **Start new project** and name it `AquaGuard`
+3. Click **Start new project** and name it `BIOQUA`
 4. Install the **MIT AI2 Companion** app on your phone from the Play Store
 
 ### Designer View -- Building the UI
@@ -30,7 +30,7 @@ Add these components from the palette:
 
 | Component | Name | Properties |
 |-----------|------|------------|
-| Label | `lblTitle` | Text: "AquaGuard Dashboard", FontSize: 24, FontBold: true |
+| Label | `lblTitle` | Text: "BIOQUA Dashboard", FontSize: 24, FontBold: true |
 | HorizontalArrangement | `rowPH` | Width: Fill parent |
 | Label (inside rowPH) | `lblPHLabel` | Text: "pH:" |
 | Label (inside rowPH) | `lblPHValue` | Text: "---", FontSize: 20 |
@@ -145,10 +145,10 @@ This requires zero coding and works in under 2 minutes.
 1. Install **Serial Bluetooth Terminal** by Kai Morich from the Google Play Store
    (free, no account required)
 2. Open your phone's **Bluetooth Settings**
-3. Tap **Pair new device** and select **AquaGuard-ESP32**
+3. Tap **Pair new device** and select **BIOQUA-ESP32**
    - PIN if prompted: `1234` (ESP32 default)
 4. Open the Serial Bluetooth Terminal app
-5. Tap the menu (three lines) > **Devices** > select **AquaGuard-ESP32**
+5. Tap the menu (three lines) > **Devices** > select **BIOQUA-ESP32**
 6. Tap the **Connect** button (plug icon)
 7. You should see incoming lines like:
    ```

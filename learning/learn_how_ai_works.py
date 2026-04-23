@@ -1,16 +1,16 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
 """
-Learning Module 3: How AI Works in AquaGuard
+Learning Module 3: How AI Works in BIOQUA
 Explains HSV color thresholding, contour analysis, transfer learning,
 and neural networks in plain English with analogies.
 """
@@ -37,7 +37,7 @@ def pause():
 def introduction():
     print_header("HOW AI DETECTS BACTERIA IN WATER")
 
-    print("""  AquaGuard uses Artificial Intelligence (AI) to look at
+    print("""  BIOQUA uses Artificial Intelligence (AI) to look at
   microscope images of water samples and detect bacteria.
 
   But how does a computer "see" bacteria? It can't squint at
@@ -91,10 +91,10 @@ def hsv_section():
       (240)  \\      / (120)
             Cyan (180)
 
-  HOW AQUAGUARD USES IT:
+  HOW BIOQUA USES IT:
 
   After Gram staining, bacteria appear as PURPLE or PINK
-  blobs against a lighter background. AquaGuard converts the
+  blobs against a lighter background. BIOQUA converts the
   image to HSV and says:
 
       "Keep only pixels where H is between 120-170 (purple
@@ -269,16 +269,16 @@ def transfer_learning_section():
       |  only hundreds of images instead of millions! |
       +----------------------------------------------+
 
-  This is how AquaGuard can be accurate with a relatively
+  This is how BIOQUA can be accurate with a relatively
   small training dataset. We stand on the shoulders of giants!
 """)
     pause()
 
 
 def putting_it_together():
-    print_header("PUTTING IT ALL TOGETHER: The AquaGuard Pipeline")
+    print_header("PUTTING IT ALL TOGETHER: The BIOQUA Pipeline")
 
-    print("""  When AquaGuard analyzes a water sample image, here's what
+    print("""  When BIOQUA analyzes a water sample image, here's what
   happens step by step:
 
       [MICROSCOPE IMAGE]
@@ -331,7 +331,7 @@ def demo_mode():
         print(f"  Training data directory not found at:")
         print(f"  {training_dir}\n")
         print("  To try the demo, add sample images to the training_data/")
-        print("  folder in the AquaGuard project root.\n")
+        print("  folder in the BIOQUA project root.\n")
         pause()
         return
 
@@ -523,7 +523,7 @@ def quiz():
 
     # Q5
     print("  Question 5:")
-    print("  Why does AquaGuard convert images to HSV instead of using")
+    print("  Why does BIOQUA convert images to HSV instead of using")
     print("  regular RGB?")
     print("    A) HSV images are smaller in file size")
     print("    B) HSV separates color information from brightness,")
@@ -544,7 +544,7 @@ def quiz():
 
 def main():
     print("\n" + "*" * 60)
-    print("  AQUAGUARD LEARNING MODULE 3")
+    print("  BIOQUA LEARNING MODULE 3")
     print("  How AI Detects Bacteria in Water")
     print("*" * 60)
     pause()

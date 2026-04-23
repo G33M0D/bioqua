@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -48,7 +48,7 @@ except ImportError:
 
 from config import *
 
-MODEL_FILE = os.path.join(PROJECT_ROOT, "models", "aquaguard_features_model.pkl")
+MODEL_FILE = os.path.join(PROJECT_ROOT, "models", "bioqua_features_model.pkl")
 
 
 def extract_features(image):
@@ -267,10 +267,10 @@ def explain():
     """Explain how each feature works — great for science reports."""
     print("""
     ============================================================
-    HOW AQUAGUARD'S FEATURE EXTRACTION WORKS
+    HOW BIOQUA'S FEATURE EXTRACTION WORKS
     ============================================================
 
-    AquaGuard uses 5 measurable features to classify bacteria.
+    BIOQUA uses 5 measurable features to classify bacteria.
     Here's what each one means:
 
     1. PURPLE RATIO (Gram Stain Color)

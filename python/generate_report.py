@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -23,7 +23,7 @@ HOW TO RUN:
   python generate_report.py --date 2026-04-04  # Report for specific date
   python generate_report.py --all              # Report for all data
 
-OUTPUT: results/reports/aquaguard_report_YYYY-MM-DD.pdf
+OUTPUT: results/reports/bioqua_report_YYYY-MM-DD.pdf
 """
 
 import os
@@ -71,10 +71,10 @@ def generate_report(date_filter=None):
 
     if date_filter:
         date_str = date_filter
-        filename = f"aquaguard_report_{date_str}.pdf"
+        filename = f"bioqua_report_{date_str}.pdf"
     else:
         date_str = time.strftime("%Y-%m-%d")
-        filename = f"aquaguard_report_{date_str}_all.pdf"
+        filename = f"bioqua_report_{date_str}_all.pdf"
     filepath = os.path.join(REPORTS_DIR, filename)
 
     pdf = FPDF()
@@ -83,9 +83,9 @@ def generate_report(date_filter=None):
     # ── Cover Page ──
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 28)
-    pdf.cell(0, 40, "AquaGuard", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 40, "BIOQUA", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.set_font("Helvetica", "", 16)
-    pdf.cell(0, 10, "AI-Powered Bacteria Detection", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 10, "AI-Assisted Water Quality Monitoring", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.cell(0, 10, "for Safe Drinking Water", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(20)
     pdf.set_font("Helvetica", "", 12)
@@ -94,7 +94,7 @@ def generate_report(date_filter=None):
     pdf.cell(0, 8, f"Total Tests: {len(entries)}", new_x="LMARGIN", new_y="NEXT", align="C")
     pdf.ln(30)
     pdf.set_font("Helvetica", "I", 10)
-    pdf.cell(0, 8, "Original Author: Guillanne Marie Agreda", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.cell(0, 8, "Authors: Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.", new_x="LMARGIN", new_y="NEXT", align="C")
 
     # ── Summary Page ──
     pdf.add_page()
@@ -237,7 +237,7 @@ def generate_chart(entries, output_path):
     ax1.axhline(y=6.5, color='r', linestyle='--', alpha=0.5, label='Normal min')
     ax1.axhline(y=8.5, color='r', linestyle='--', alpha=0.5, label='Normal max')
     ax1.set_ylabel('pH')
-    ax1.set_title('AquaGuard - Water Quality Over Time')
+    ax1.set_title('BIOQUA - Water Quality Over Time')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
 

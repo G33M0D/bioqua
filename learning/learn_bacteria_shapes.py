@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -98,7 +98,7 @@ def cocci_section():
   +---------------------------+-------------------------------+
 
   WATER QUALITY NOTE: Finding Enterococcus (a coccus) in water
-  is a strong indicator of sewage contamination. AquaGuard
+  is a strong indicator of sewage contamination. BIOQUA
   watches for these!
 """)
     pause()
@@ -152,7 +152,7 @@ def bacilli_section():
   +---------------------------+-------------------------------+
 
   WATER QUALITY NOTE: E. coli is the GOLD STANDARD indicator
-  for fecal contamination in drinking water. If AquaGuard finds
+  for fecal contamination in drinking water. If BIOQUA finds
   E. coli, that water is NOT safe to drink.
 """)
     pause()
@@ -237,7 +237,7 @@ def comparison_chart():
   |  350 bacteria side-by-side across a single hair!     |
   +------------------------------------------------------+
 
-  WHY SHAPE MATTERS FOR AQUAGUARD:
+  WHY SHAPE MATTERS FOR BIOQUA:
   When our AI analyzes a microscope image, shape is one of
   the first features it uses to classify bacteria. Round blobs?
   Probably cocci. Elongated shapes? Likely bacilli. Curved or
@@ -327,7 +327,7 @@ def quiz():
 
 def main():
     print("\n" + "*" * 60)
-    print("  AQUAGUARD LEARNING MODULE 2")
+    print("  BIOQUA LEARNING MODULE 2")
     print("  Bacteria Shapes: Cocci, Bacilli, and Spirilla")
     print("*" * 60)
     pause()

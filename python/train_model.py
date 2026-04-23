@@ -1,16 +1,16 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
 """
-Train the AquaGuard AI Model
+Train the BIOQUA AI Model
 =============================
 This script trains a bacteria classifier using transfer learning
 with MobileNetV2. It learns from images you've collected.
@@ -30,7 +30,7 @@ HOW TO RUN:
 WHAT IT DOES:
   - Loads a pre-trained MobileNetV2 model (trained on millions of images)
   - Fine-tunes it on YOUR bacteria images (transfer learning)
-  - Saves the trained model to models/aquaguard_model.h5
+  - Saves the trained model to models/bioqua_model.h5
 
 TIME: 5-15 minutes on a modern laptop (no GPU needed)
 """
@@ -236,8 +236,8 @@ def train():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("  AquaGuard AI Model Trainer")
-    print("  Original Author: Guillanne Marie Agreda")
+    print("  BIOQUA AI Model Trainer")
+    print("  Authors: Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.")
     print("=" * 60)
     print()
 

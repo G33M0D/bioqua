@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -13,7 +13,7 @@
 Verify Credit Headers
 ======================
 Scans all project source files and checks that the
-Guillanne Marie Agreda credit header is present.
+BIOQUA co-author credit header is present.
 Flags any files where the header has been removed or tampered with.
 
 HOW TO RUN:
@@ -30,7 +30,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import PROJECT_ROOT
 
-CREDIT_MARKER = "Guillanne Marie Agreda"
+CREDIT_MARKER = "Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D."
 
 # File extensions to check
 SOURCE_EXTENSIONS = {'.py', '.ino', '.cpp', '.h'}
@@ -74,7 +74,7 @@ def scan_files():
 
 def main():
     print("=" * 60)
-    print("  AquaGuard Credit Verification")
+    print("  BIOQUA Credit Verification")
     print("  Checking for: " + CREDIT_MARKER)
     print("=" * 60)
     print()

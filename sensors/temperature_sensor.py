@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -26,7 +26,7 @@ Hardware:
     The DS18B20 uses a "1-Wire" digital protocol on one Arduino pin.
     The Arduino reads it and includes the value in serial output.
 
-    This sensor is an OPTIONAL add-on. AquaGuard works without it.
+    This sensor is an OPTIONAL add-on. BIOQUA works without it.
 """
 
 from sensors.base_sensor import BaseSensor

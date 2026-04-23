@@ -1,5 +1,5 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 # Python Dependencies
 # ============================================================
 # Install all at once:  pip install -r requirements.txt

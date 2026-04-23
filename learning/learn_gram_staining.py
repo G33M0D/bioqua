@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -183,7 +183,7 @@ def why_it_matters():
       - Bacillus                   - Vibrio cholerae (cholera)
       - Clostridium                - Pseudomonas
 
-  In water quality testing (like AquaGuard!), knowing the Gram
+  In water quality testing (like BIOQUA!), knowing the Gram
   type helps identify what kind of contamination you're dealing
   with and how dangerous it might be.
 """)
@@ -297,7 +297,7 @@ def quiz():
 
 def main():
     print("\n" + "*" * 60)
-    print("  AQUAGUARD LEARNING MODULE 1")
+    print("  BIOQUA LEARNING MODULE 1")
     print("  Gram Staining: The Microbiologist's Color Code")
     print("*" * 60)
     pause()

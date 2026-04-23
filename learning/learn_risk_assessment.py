@@ -1,18 +1,18 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
 """
 Learning Module 5: Risk Assessment
 Interactive calculator that combines pH, EC, and bacteria type
-to determine water safety risk level -- just like AquaGuard does.
+to determine water safety risk level -- just like BIOQUA does.
 """
 
 
@@ -48,9 +48,9 @@ BACTERIA_RISK = {
 
 
 def introduction():
-    print_header("RISK ASSESSMENT: How AquaGuard Decides If Water Is Safe")
+    print_header("RISK ASSESSMENT: How BIOQUA Decides If Water Is Safe")
 
-    print("""  When AquaGuard tests a water sample, it doesn't just look
+    print("""  When BIOQUA tests a water sample, it doesn't just look
   at ONE measurement. It combines MULTIPLE data points to
   calculate an overall RISK LEVEL.
 
@@ -59,13 +59,13 @@ def introduction():
   heart rate, and other signs. Only by looking at everything
   together can they make a good diagnosis.
 
-  AquaGuard combines three key measurements:
+  BIOQUA combines three key measurements:
 
       1. pH          -- Is the water's chemistry balanced?
       2. EC (uS/cm)  -- How much stuff is dissolved in it?
       3. Bacteria    -- What (if any) bacteria were detected?
 
-  In this module, YOU will be the AquaGuard system! You'll
+  In this module, YOU will be the BIOQUA system! You'll
   input water measurements and see how the risk calculator
   works step by step.
 """)
@@ -75,7 +75,7 @@ def introduction():
 def explain_scoring():
     print_header("HOW THE RISK SCORE WORKS")
 
-    print("""  AquaGuard uses a point-based risk system from 0 to 100:
+    print("""  BIOQUA uses a point-based risk system from 0 to 100:
 
       RISK SCORE     RISK LEVEL        COLOR     ACTION
       ----------     ---------------   -------   ----------------
@@ -249,7 +249,7 @@ def get_risk_level(score):
 
 def interactive_calculator():
     print_header("INTERACTIVE RISK CALCULATOR")
-    print("  You are now the AquaGuard system! Enter water sample")
+    print("  You are now the BIOQUA system! Enter water sample")
     print("  measurements and see the risk assessment in real time.\n")
     print("  (Type 'quit' at any prompt to skip to the quiz)\n")
 
@@ -306,7 +306,7 @@ def interactive_calculator():
 
         # Calculate risk
         print("\n" + "=" * 56)
-        print("  AQUAGUARD RISK ASSESSMENT REPORT")
+        print("  BIOQUA RISK ASSESSMENT REPORT")
         print("=" * 56)
 
         print_subheader("INPUT DATA")
@@ -344,23 +344,23 @@ def interactive_calculator():
         print_subheader("RECOMMENDATION")
         print(f"  {recommendation}\n")
 
-        # Show what AquaGuard would do
-        print_subheader("AQUAGUARD RESPONSE")
+        # Show what BIOQUA would do
+        print_subheader("BIOQUA RESPONSE")
         if total <= 20:
-            print("  AquaGuard LED:  GREEN (steady)")
-            print("  AquaGuard LCD:  'Water Safe - All parameters normal'")
+            print("  BIOQUA LED:  GREEN (steady)")
+            print("  BIOQUA LCD:  'Water Safe - All parameters normal'")
             print("  Cloud upload:   Routine data logged")
         elif total <= 40:
-            print("  AquaGuard LED:  YELLOW (slow blink)")
-            print("  AquaGuard LCD:  'Caution - Review parameters'")
+            print("  BIOQUA LED:  YELLOW (slow blink)")
+            print("  BIOQUA LCD:  'Caution - Review parameters'")
             print("  Cloud upload:   Flagged for review")
         elif total <= 60:
-            print("  AquaGuard LED:  ORANGE (fast blink)")
-            print("  AquaGuard LCD:  'WARNING - Do not drink!'")
+            print("  BIOQUA LED:  ORANGE (fast blink)")
+            print("  BIOQUA LCD:  'WARNING - Do not drink!'")
             print("  Cloud upload:   Alert sent to operator")
         else:
-            print("  AquaGuard LED:  RED (rapid blink)")
-            print("  AquaGuard LCD:  'DANGER - Water contaminated!'")
+            print("  BIOQUA LED:  RED (rapid blink)")
+            print("  BIOQUA LCD:  'DANGER - Water contaminated!'")
             print("  Cloud upload:   Emergency alert sent!")
             print("  SMS/Email:      Notification to health authority")
 
@@ -431,7 +431,7 @@ def preset_scenarios():
   weighted factor. Clean-looking water with E. coli is
   MORE dangerous than acidic water without bacteria!
 
-  This is exactly how AquaGuard prioritizes threats.
+  This is exactly how BIOQUA prioritizes threats.
 """)
     pause()
 
@@ -475,7 +475,7 @@ def quiz():
 
     # Q3
     print("  Question 3:")
-    print("  Why does AquaGuard combine MULTIPLE measurements instead")
+    print("  Why does BIOQUA combine MULTIPLE measurements instead")
     print("  of just testing for bacteria?")
     print("    A) To make the device more expensive")
     print("    B) Because one measurement alone doesn't tell the full")
@@ -494,7 +494,7 @@ def quiz():
 
     # Q4
     print("  Question 4:")
-    print("  A risk score of 75/100 means the AquaGuard LED would show:")
+    print("  A risk score of 75/100 means the BIOQUA LED would show:")
     print("    A) GREEN (steady) -- everything is fine")
     print("    B) YELLOW (slow blink) -- minor caution")
     print("    C) RED (rapid blink) -- dangerous contamination")
@@ -512,7 +512,7 @@ def quiz():
 
 def main():
     print("\n" + "*" * 60)
-    print("  AQUAGUARD LEARNING MODULE 5")
+    print("  BIOQUA LEARNING MODULE 5")
     print("  Risk Assessment: Combining Data for Water Safety")
     print("*" * 60)
     pause()
@@ -531,13 +531,13 @@ def main():
     print(f"  Module complete! You scored {score}/4")
     print()
     if score == 4:
-        print("  PERFECT SCORE! You understand how AquaGuard assesses risk!")
+        print("  PERFECT SCORE! You understand how BIOQUA assesses risk!")
     elif score >= 3:
         print("  Great job! You've got a solid grasp of risk assessment.")
     else:
         print("  Review the scoring system and try again!")
     print()
-    print("  You've completed all AquaGuard learning modules!")
+    print("  You've completed all BIOQUA learning modules!")
     print("  You now understand:")
     print("    - Gram staining (Module 1)")
     print("    - Bacteria shapes (Module 2)")

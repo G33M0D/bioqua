@@ -1,21 +1,21 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
 """
-AquaGuard Configuration
+BIOQUA Configuration
 =======================
 Change any setting below. All optional features are OFF by default.
 Enable them one at a time when you're ready to explore.
 
-To customize AquaGuard, only edit THIS file — you never need to
+To customize BIOQUA, only edit THIS file — you never need to
 touch the other Python scripts unless you want to.
 """
 
@@ -40,7 +40,7 @@ CAMERA_INDEX = 0
 
 # AI Model — path to the trained model file
 # After training, your model will be saved here automatically.
-AI_MODEL_PATH = os.path.join(PROJECT_ROOT, "models", "aquaguard_model.h5")
+AI_MODEL_PATH = os.path.join(PROJECT_ROOT, "models", "bioqua_model.h5")
 
 # Class names — MUST match alphabetical order of folder names in training_data/
 # because Keras flow_from_directory() assigns class indices alphabetically.
@@ -128,13 +128,13 @@ TURBIDITY_SENSOR_PIN = "A3"     # Analog turbidity sensor module
 
 # ─── BLUETOOTH (only used if FEATURE_BLUETOOTH_MOBILE = True) ─
 
-ESP32_BLUETOOTH_NAME = "AquaGuard"
+ESP32_BLUETOOTH_NAME = "BIOQUA"
 
 # ─── ARDUINO PIN ASSIGNMENTS ─────────────────────────────────
 # IMPORTANT: These values are for REFERENCE ONLY on the Python side.
 # The Arduino sketch has its OWN copy of pin assignments and timings.
 # If you change values here, you MUST also update the Arduino sketch
-# (arduino/aquaguard_controller/aquaguard_controller.ino) to match!
+# (arduino/bioqua_controller/bioqua_controller.ino) to match!
 
 RELAY_PINS = {
     "crystal_violet": 2,   # Relay 1 → Solenoid valve 1

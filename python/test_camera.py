@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -41,7 +41,7 @@ except ImportError:
 
 def main():
     print("=" * 50)
-    print("  AquaGuard Camera Test")
+    print("  BIOQUA Camera Test")
     print("=" * 50)
     print()
     print("Testing camera indices 0, 1, 2...")
@@ -93,7 +93,7 @@ def main():
         cv2.putText(frame, f"Camera index: {index} | Press [q] to quit",
                     (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-        cv2.imshow("AquaGuard Camera Test", frame)
+        cv2.imshow("BIOQUA Camera Test", frame)
 
         key = cv2.waitKey(100) & 0xFF
         if key == ord('q'):

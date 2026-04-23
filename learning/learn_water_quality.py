@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -40,7 +40,7 @@ def introduction():
 
   Waterborne diseases kill over 500,000 people every year,
   mostly children under 5. That's why water quality testing
-  matters -- and that's why AquaGuard exists.
+  matters -- and that's why BIOQUA exists.
 
   In this module, you'll learn:
 
@@ -94,7 +94,7 @@ def ph_section():
       - pH outside 6.5-8.5 may also indicate chemical contamination
       - Water treatment (chlorination) works best at pH 6.5-7.5
 
-  AQUAGUARD uses a pH sensor to check if water falls within
+  BIOQUA uses a pH sensor to check if water falls within
   the safe range. If it doesn't, that's already a warning sign!
 """)
     pause()
@@ -181,7 +181,7 @@ def standards_table():
       |  ZERO bacteria per 100 mL.                        |
       +---------------------------------------------------+
 
-  This is why AquaGuard's bacteria detection capability is
+  This is why BIOQUA's bacteria detection capability is
   so critical -- even a small amount of contamination can
   cause disease outbreaks.
 """)
@@ -269,7 +269,7 @@ def safe_vs_unsafe():
   | No smell          | Good sign, but doesn't guarantee safety   |
   +-------------------+-------------------------------------------+
 
-  WHAT AQUAGUARD MEASURES (beyond what you can see/smell):
+  WHAT BIOQUA MEASURES (beyond what you can see/smell):
   +-------------------+-------------------------------------------+
   | MEASUREMENT       | WHY IT MATTERS                            |
   +-------------------+-------------------------------------------+
@@ -280,10 +280,10 @@ def safe_vs_unsafe():
   | Gram type         | Treatment options                         |
   +-------------------+-------------------------------------------+
 
-  THE AQUAGUARD ADVANTAGE:
+  THE BIOQUA ADVANTAGE:
 
       Traditional testing: Send sample to lab, wait 24-48 hours
-      AquaGuard testing:   On-site results in minutes
+      BIOQUA testing:   On-site results in minutes
 
   This speed can literally save lives during outbreaks!
 """)
@@ -366,7 +366,7 @@ def quiz():
     answer = input("\n  Your answer (A/B/C/D): ").strip().upper()
     if answer == "B":
         print("  Correct! Many contaminants are invisible. That's exactly\n"
-              "  why scientific testing (like AquaGuard) is needed.\n")
+              "  why scientific testing (like BIOQUA) is needed.\n")
         score += 1
     else:
         print("  Incorrect. The answer is B -- invisible contaminants exist.\n")
@@ -376,7 +376,7 @@ def quiz():
 
 def main():
     print("\n" + "*" * 60)
-    print("  AQUAGUARD LEARNING MODULE 4")
+    print("  BIOQUA LEARNING MODULE 4")
     print("  Water Quality: Standards, Indicators & Safety")
     print("*" * 60)
     pause()

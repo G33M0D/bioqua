@@ -1,11 +1,11 @@
 # ============================================================
-# AquaGuard: AI-Powered Bacteria Detection for Safe Drinking Water
+# BIOQUA: AI-Assisted Water Quality Monitoring System
 #
-# Original Author : Guillanne Marie Agreda
+# Authors         : Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D.
 # Year            : 2026
 # License         : MIT License
 #
-# This project is the original work of the author.
+# This project is the original work of the authors.
 # Unauthorized removal of this notice is prohibited.
 # ============================================================
 
@@ -72,7 +72,7 @@ class PHSensor(BaseSensor):
             line = self._shared_serial.readline().decode('utf-8', errors='ignore').strip()
             if line and ',' in line:
                 # Skip Arduino status messages
-                if not line.startswith(('STEP:', 'STAINING', 'AQUAGUARD', 'STATUS:', 'RESULT:')):
+                if not line.startswith(('STEP:', 'STAINING', 'BIOQUA', 'STATUS:', 'RESULT:')):
                     parts = line.split(',')
                     value = float(parts[0])
                     if 0 <= value <= 14:  # Sanity check
