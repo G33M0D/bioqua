@@ -319,6 +319,8 @@ Here is a summary of all connections:
 | Relay 5 (DI Water valve) | D6 | Digital output |
 | Relay 6 (Peristaltic pump) | D7 | Digital output |
 | Start Button | D8 | Optional, uses internal pull-up |
+| 3/2-Way Directional Valve (Phase 2) | D9 | LOW = intake path, HIGH = injection path |
+| Syringe Actuator (Phase 2) | D10 | HIGH = energise, LOW = idle |
 | LCD SDA | SDA (pin 20) | I2C data |
 | LCD SCL | SCL (pin 21) | I2C clock |
 
@@ -331,6 +333,8 @@ Here is a summary of all connections:
 | Relay Module | 5V from Arduino (signal), separate 12V supply (valves) | **Never power solenoid valves directly from Arduino -- they need their own power supply** |
 | LCD (20x4 I2C) | 5V from Arduino | VCC to 5V, GND to GND |
 | Peristaltic Pump | External 12V supply via relay | Same as solenoid valves |
+| 3/2-Way Valve | External 12V supply via relay | Two-position solenoid valve (Phase 2) |
+| Syringe Actuator | External 5V/12V per spec | Servo- or stepper-driven 1 mL syringe (Phase 2) |
 
 ### Important Safety Notes
 

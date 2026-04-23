@@ -44,8 +44,8 @@ RELAY MODULES (2x 4-channel, active LOW)
     GND  →  Arduino GND
     IN1  →  Arduino D6  (DI Water valve)
     IN2  →  Arduino D7  (Peristaltic pump)
-    IN3  →  (spare)
-    IN4  →  (spare)
+    IN3  →  Arduino D9  (3/2-way directional valve — Phase 2)
+    IN4  →  Arduino D10 (Syringe actuator enable — Phase 2)
 
   Each relay output connects to a 12V solenoid valve or pump:
     Relay COM   →  12V power supply (+)
@@ -86,19 +86,26 @@ FLUID CONNECTIONS (Silicone Tubing 3x5mm)
   Reagent Bottles (5):
     [Crystal Violet] → Solenoid Valve 1 ─┐
     [Iodine]         → Solenoid Valve 2 ─┤
-    [Decolorizer]    → Solenoid Valve 3 ─┼→ Common Manifold → Peristaltic Pump → Flow Cell Inlet
+    [Decolorizer]    → Solenoid Valve 3 ─┼→ Common Manifold → Peristaltic Pump → Microfluidic Chamber Inlet
     [Safranin]        → Solenoid Valve 4 ─┤
     [DI Water]       → Solenoid Valve 5 ─┘
 
-  Flow Cell:
-    Inlet ← from peristaltic pump
-    Outlet → Waste container
+  Sample Intake Path (Phase 1 → Phase 2):
+    [Water Sample] → [Pre-Filter] → [Sensor Manifold (EC / pH probe)]
+                                              |
+                                    [3/2-Way Directional Valve]
+                                       /                    \
+                            LOW (intake)              HIGH (injection)
+                                /                            \
+                         [1 mL Syringe]  ← Phase 2 → [Microfluidic Chamber]
 
-  Flow Cell Construction:
+  Microfluidic Chamber Construction:
     - 2 glass microscope slides
     - Separated by double-sided tape (200-500 um gap)
-    - Inlet/outlet: small holes or gaps in the tape
-    - Sealed edges with epoxy or silicone
+    - Inlet: fed by syringe via 3/2-way valve (Phase 2)
+    - Reagent inlet: fed by manifold + pump during staining (Phase 3)
+    - Serpentine channel pattern etched/taped between the slides
+    - Outlet: waste container
     - Place on microscope stage for observation
 
 
@@ -109,19 +116,21 @@ COMPLETE SYSTEM DIAGRAM
        |
   [Pre-Filter] ← inline sediment filter
        |
-  [Sensor Chamber] ← pH probe + TDS probe in the water
+  [Sensor Manifold] ← pH probe + EC/TDS probe (Phase 1 — bulk measurement)
        |
-  [Solenoid Valves] ← controlled by Arduino via relays
+  [3/2-Way Directional Valve] ← Arduino D9 selects aspirate vs. inject
        |
-  [Peristaltic Pump] ← pulls fluid through the system
+  [1 mL Syringe] ← Arduino D10 drives; Phase 2 aspiration/injection
        |
-  [Flow Cell / Staining Chamber] ← on microscope stage
+  [Microfluidic Chamber] ← sample injected here; stain reagents arrive via pump
        |
-  [Microscope + USB Camera] → Laptop (Python + AI)
+  [Reagent Valves + Peristaltic Pump] ← Phase 3 Gram staining
        |
-  [Arduino LCD] ← receives classification result
+  [Microscope + USB Camera] → Laptop (Python + AI, Phase 4 gated fusion)
        |
-  [Risk Level: LOW / MODERATE / HIGH]
+  [Arduino LCD] ← receives Phase 4 risk verdict
+       |
+  [Risk Level: SAFE / LOW / MOD-BIO / MOD / MOD-HIGH / HIGH]
 
 
 SAFETY NOTES

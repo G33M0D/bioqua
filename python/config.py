@@ -222,4 +222,21 @@ RELAY_PINS = {
     "pump": 7,             # Relay 6 → Peristaltic pump
 }
 
+# ─── PHASE 2 HARDWARE — Aspiration and Injection ─────────────
+# These components sit between the sensor manifold (Phase 1) and the
+# microfluidic chamber (Phase 3). See docs/Phase.pdf §Phase 2.
+#
+#   Aspiration: DIR_VALVE routed to intake → syringe pulls 1 mL
+#   Injection:  DIR_VALVE routed to chamber → syringe pushes 1 mL
+#
+# The 3/2-way valve is on Arduino pin D9; the syringe actuator (servo
+# or stepper enable) is on pin D10. Adjust to match your wiring.
+VALVE_3_2_PIN = 9                  # 3/2-way directional valve
+SYRINGE_ACTUATOR_PIN = 10          # Syringe drive (servo / stepper enable)
+
+MICROCHAMBER_VOLUME_ML = 1.0       # Syringe draw volume — matches chamber
+ASPIRATION_DURATION_MS = 8000      # Time to draw 1 mL at rated speed
+INJECTION_DURATION_MS = 5000       # Time to push 1 mL into the chamber
+MIXING_DURATION_MS = 3000          # Extra dwell for serpentine-channel mixing
+
 LCD_ADDRESS = 0x27  # I2C address of the 20x4 LCD (common: 0x27 or 0x3F)

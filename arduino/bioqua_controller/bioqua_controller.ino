@@ -10,21 +10,27 @@
 // ============================================================
 
 /*
- * BIOQUA Arduino Controller
- * ============================
- * This sketch runs on Arduino Mega 2560 and handles:
- *   1. Reading pH and EC sensors
- *   2. Controlling 5 solenoid valves + 1 peristaltic pump
- *   3. Running the automated Gram stain sequence
- *   4. Displaying results on a 20x4 LCD
- *   5. Communicating with the laptop via Serial
+ * BIOQUA Arduino Controller — Four-Phase Implementation
+ * =====================================================
+ * Runs on Arduino Mega 2560. Each test cycle moves through the four
+ * phases defined in docs/Phase.pdf:
+ *
+ *   Phase 1 — EC/TDS measurement on bulk water in the sensor manifold
+ *   Phase 2 — Aspiration (1 mL syringe) and injection into the microchamber
+ *   Phase 3 — On-chip Gram staining (CV → Iodine → Decolorizer → Safranin)
+ *   Phase 4 — Risk result received from laptop and displayed on the LCD
  *
  * WIRING (see wiring/wiring_diagram.txt for full details):
- *   pH sensor   → A0
- *   TDS sensor  → A1
- *   Relay 1-6   → D2-D7 (valves + pump)
- *   LCD SDA     → SDA (pin 20)
- *   LCD SCL     → SCL (pin 21)
+ *   pH sensor           → A0
+ *   TDS / EC sensor     → A1
+ *   Reagent relays 1-4  → D2-D5  (CV, Iodine, Decolor, Safranin)
+ *   DI water valve      → D6
+ *   Peristaltic pump    → D7
+ *   Start button        → D8
+ *   3/2-way dir valve   → D9     (aspirate vs. inject path)
+ *   Syringe actuator    → D10    (servo / stepper enable)
+ *   LCD SDA             → SDA (pin 20)
+ *   LCD SCL             → SCL (pin 21)
  */
 
 #include <Wire.h>
@@ -43,7 +49,13 @@
 #define RELAY_WATER     6       // DI Water solenoid valve
 #define RELAY_PUMP      7       // Peristaltic pump
 
-#define BUTTON_START    8       // Start staining button (optional)
+#define BUTTON_START    8       // Start button (optional)
+
+// Phase 2 hardware — aspiration + injection
+#define VALVE_DIR       9       // 3/2-way directional valve
+                                //   LOW  = intake path (manifold -> syringe)
+                                //   HIGH = injection path (syringe -> chamber)
+#define SYRINGE_PIN     10      // Syringe actuator (servo / stepper enable)
 
 // ─── LCD SETUP ───────────────────────────────────────────────
 // 20 characters wide, 4 rows. I2C address is usually 0x27 or 0x3F.
@@ -61,6 +73,15 @@ unsigned long STAIN_DECOLOR_MS  = 10000;   // Decolorizer: 10 sec (CRITICAL)
 unsigned long STAIN_SAFRANIN_MS = 60000;   // Safranin: 60 sec
 unsigned long WASH_MS           = 15000;   // DI water wash: 15 sec
 unsigned long SETTLE_MS         = 120000;  // Bacteria settle time: 2 min
+
+// Phase 1 timing — let the manifold fill before reading EC.
+unsigned long MANIFOLD_FILL_MS  = 4000;    // Pump long enough to flood the EC probe
+unsigned long EC_SETTLE_MS      = 1500;    // Dwell so the EC reading stabilises
+
+// Phase 2 timings — keep in sync with python/config.py.
+unsigned long ASPIRATION_MS     = 8000;    // Time to draw 1 mL
+unsigned long INJECTION_MS      = 5000;    // Time to push 1 mL into chamber
+unsigned long MIXING_MS         = 3000;    // Serpentine-channel mixing dwell
 
 // ─── CALIBRATION VALUES ─────────────────────────────────────
 // Adjust these based on your specific sensor readings.
@@ -90,14 +111,18 @@ void setup() {
     digitalWrite(RELAY_SAFRANIN, HIGH);
     digitalWrite(RELAY_WATER, HIGH);
     digitalWrite(RELAY_PUMP, HIGH);
+    digitalWrite(VALVE_DIR, LOW);    // LOW = intake path at rest
+    digitalWrite(SYRINGE_PIN, LOW);  // Syringe actuator disabled
 
-    // Now set as outputs (pins are already HIGH = OFF)
+    // Now set as outputs (pins are already at their safe default)
     pinMode(RELAY_CV, OUTPUT);
     pinMode(RELAY_IODINE, OUTPUT);
     pinMode(RELAY_DECOLOR, OUTPUT);
     pinMode(RELAY_SAFRANIN, OUTPUT);
     pinMode(RELAY_WATER, OUTPUT);
     pinMode(RELAY_PUMP, OUTPUT);
+    pinMode(VALVE_DIR, OUTPUT);
+    pinMode(SYRINGE_PIN, OUTPUT);
 
     // Optional start button
     pinMode(BUTTON_START, INPUT_PULLUP);
@@ -217,19 +242,82 @@ float readEC() {
     return ec;
 }
 
-// ─── GRAM STAINING SEQUENCE ─────────────────────────────────
+// ─── FOUR-PHASE TEST CYCLE ──────────────────────────────────
+// See docs/Phase.pdf. Each phase has a single entry point called by
+// runGramStain() so the overall flow reads top-to-bottom.
 
 void runGramStain() {
     stainingInProgress = true;
-    Serial.println("STAINING_START");
+    Serial.println("CYCLE_START");
 
-    // --- Step 0: Load sample and let bacteria settle ---
-    lcdStatus("Loading sample...", 1);
-    openValve(RELAY_WATER);  // Open water valve so pump has a fluid path
+    phase1_ecTdsMeasurement();
+    phase2_aspirateAndInject();
+    phase3_gramStaining();
+
+    stainingInProgress = false;
+    Serial.println("CYCLE_DONE");
+
+    // Phase 4 (risk fusion) happens on the laptop. This sketch returns
+    // to the main loop and waits for a "RESULT:..." serial message that
+    // displayResult() will render on the LCD.
+}
+
+// --- Phase 1: EC/TDS measurement on bulk water in the manifold ---
+// Must run BEFORE the sample is sent to the chamber, because accurate
+// TDS estimation needs volume (paper §Phase 1).
+void phase1_ecTdsMeasurement() {
+    Serial.println("PHASE:1_EC_TDS");
+    lcdStatus("Phase 1: EC/TDS", 1);
+    lcdStatus("Filling manifold", 2);
+
+    // Fill the manifold so the EC probe is fully immersed.
+    openValve(RELAY_WATER);
     openValve(RELAY_PUMP);
-    delay(5000);  // Pump sample into chamber for 5 seconds
+    delay(MANIFOLD_FILL_MS);
     closeValve(RELAY_PUMP);
     closeValve(RELAY_WATER);
+
+    // Let EC reading stabilise, then sample.
+    delay(EC_SETTLE_MS);
+    float pH = readPH();
+    float ec = readEC();
+    Serial.print("PHASE1_READ:");
+    Serial.print(pH, 2);
+    Serial.print(",");
+    Serial.println(ec, 1);
+}
+
+// --- Phase 2: Aspirate 1 mL, switch 3/2-way valve, inject into chamber ---
+void phase2_aspirateAndInject() {
+    Serial.println("PHASE:2_ASPIRATE_INJECT");
+    lcdStatus("Phase 2: Aspirate", 1);
+    lcdStatus("Drawing 1 mL", 2);
+
+    // Aspiration: direct valve to intake path, run syringe backwards.
+    digitalWrite(VALVE_DIR, LOW);    // LOW = intake (manifold -> syringe)
+    digitalWrite(SYRINGE_PIN, HIGH); // Energise syringe actuator
+    delay(ASPIRATION_MS);
+    digitalWrite(SYRINGE_PIN, LOW);
+
+    // Flip the 3/2-way valve to the injection path, then push.
+    lcdStatus("Phase 2: Inject", 1);
+    lcdStatus("To microchamber", 2);
+    digitalWrite(VALVE_DIR, HIGH);   // HIGH = injection (syringe -> chamber)
+    delay(500);                      // Let the valve mechanically settle
+    digitalWrite(SYRINGE_PIN, HIGH);
+    delay(INJECTION_MS);
+    digitalWrite(SYRINGE_PIN, LOW);
+
+    // Return valve to rest position so the chamber isn't backfed.
+    digitalWrite(VALVE_DIR, LOW);
+
+    // Brief mixing / settling dwell before staining starts.
+    delay(MIXING_MS);
+}
+
+// --- Phase 3: On-chip Gram staining (sample already in microchamber) ---
+void phase3_gramStaining() {
+    Serial.println("PHASE:3_GRAM_STAIN");
 
     lcdStatus("Settling: 2 min", 1);
     Serial.println("STEP:SETTLE");
@@ -263,15 +351,10 @@ void runGramStain() {
     flowReagent(RELAY_SAFRANIN, STAIN_SAFRANIN_MS);
     washStep();
 
-    // --- Done ---
     allValvesOff();
-    stainingInProgress = false;
-
     lcdStatus("Staining Complete!", 1);
     lcdStatus("Analyzing...", 2);
     Serial.println("STAINING_DONE");
-
-    // The laptop will now capture an image and classify
 }
 
 // ─── VALVE CONTROL HELPERS ───────────────────────────────────
@@ -311,6 +394,8 @@ void allValvesOff() {
     digitalWrite(RELAY_SAFRANIN, HIGH);
     digitalWrite(RELAY_WATER, HIGH);
     digitalWrite(RELAY_PUMP, HIGH);
+    digitalWrite(VALVE_DIR, LOW);     // Return 3/2-way valve to rest (intake)
+    digitalWrite(SYRINGE_PIN, LOW);   // Ensure syringe actuator is off
 }
 
 // ─── LCD DISPLAY HELPERS ─────────────────────────────────────
