@@ -107,13 +107,90 @@ CIRCULARITY_COCCI = 0.7     # Above this = round (cocci)
 ASPECT_RATIO_BACILLI = 2.0  # Above this = rod-shaped (bacilli)
 MIN_CONTOUR_AREA = 50       # Ignore contours smaller than this (noise)
 
-# ─── RISK CLASSIFICATION ─────────────────────────────────────
-# How sensor data + bacteria classification combine into a risk level.
+# ─── TAXONOMY — TABLE 2.1 (Phase II Classifications) ─────────
+# The paper classifies bacteria into six final classes based on Gram stain
+# + morphology. The MobileNetV2 stand-in ships with a simpler 5-class model
+# (no chains/clusters split); the two Random Forest models described in the
+# paper are what ultimately distinguish them. See docs/Phase.pdf §C.2.2.
 
-RISK_RULES = {
-    "HIGH": "Gram-negative bacteria detected OR pH outside 5.0-9.0",
-    "MODERATE": "Any bacteria detected OR pH/EC slightly outside normal",
-    "LOW": "No bacteria detected AND normal pH AND normal EC",
+BACTERIA_CLASSES = [
+    "Gram-positive rods",
+    "Gram-positive cocci (chains)",
+    "Gram-positive cocci (clusters)",
+    "Gram-positive cocci",            # bare label, no chain/cluster split
+    "Gram-negative rods",
+    "Gram-negative cocci",
+]
+
+# The UI/LCD still uses short labels (CLASS_NAMES below); this map translates
+# them into the paper's Table 2.1 classes for the gated fusion lookup.
+CLASS_NAME_TO_PAPER_CLASS = {
+    "Gram- Bacilli": "Gram-negative rods",
+    "Gram- Cocci":   "Gram-negative cocci",
+    "Gram+ Bacilli": "Gram-positive rods",
+    "Gram+ Cocci":   "Gram-positive cocci",
+    "No Bacteria":   None,
+}
+
+# ─── CHEMICAL CONDITIONS — TABLE 2.2 (Phase III) ─────────────
+CHEMICAL_SEVERE = "Severe Chemical Contamination"       # High TDS spike + pH drop
+CHEMICAL_MODERATE = "Moderate Chemical Contamination"   # Moderate TDS, slight/stable pH
+CHEMICAL_STABLE = "Chemically Stable Water"             # No TDS spike, normal pH
+
+# Thresholds used by derive_chemical_condition() (see controller.py).
+# EC is the proxy for TDS; a spike correlates with a pH drop per Phase III.
+EC_SPIKE_HIGH = 2500         # microsiemens/cm — High TDS spike
+EC_SPIKE_MODERATE = EC_NORMAL_MAX   # 1500 — Moderate TDS increase
+PH_DROP_THRESHOLD = PH_NORMAL_MIN   # 6.5 — below this = pH drop
+
+# ─── RISK LEVELS — TABLE 2.3 (Phase IV) ──────────────────────
+RISK_HIGH          = "High-Risk Contamination"
+RISK_MODERATE_HIGH = "Moderate-High Risk"
+RISK_MODERATE      = "Moderate Risk"
+RISK_MODERATE_BIO  = "Moderate Biological Risk"
+RISK_LOW           = "Low-Risk Contamination"
+RISK_NONE          = "Safe"                # not in paper table; used when no bacteria + stable chemistry
+
+# Short code used on the 20x4 LCD and over serial (Arduino only sees this).
+RISK_SHORT_CODE = {
+    RISK_HIGH:          "HIGH",
+    RISK_MODERATE_HIGH: "MOD-HIGH",
+    RISK_MODERATE:      "MOD",
+    RISK_MODERATE_BIO:  "MOD-BIO",
+    RISK_LOW:           "LOW",
+    RISK_NONE:          "SAFE",
+}
+
+# ─── GATED FUSION TABLE — TABLE 2.3 (15 rows verbatim from the paper) ─
+# Keyed by (paper bacteria class, Phase III chemical condition).
+# Value: (risk level, interpretation).
+GATED_FUSION_TABLE = {
+    ("Gram-negative rods", CHEMICAL_SEVERE):   (RISK_HIGH,          "Pathogenic microorganisms with heavy chemical pollution"),
+    ("Gram-negative rods", CHEMICAL_MODERATE): (RISK_MODERATE_HIGH, "Harmful microorganisms with the development of pollution"),
+    ("Gram-negative rods", CHEMICAL_STABLE):   (RISK_MODERATE_BIO,  "Microorganism contamination was detected, but with normal chemical parameters"),
+
+    ("Gram-positive cocci (chains)", CHEMICAL_SEVERE):   (RISK_HIGH,     "Microorganisms present with severe physicochemical pollution"),
+    ("Gram-positive cocci (chains)", CHEMICAL_MODERATE): (RISK_MODERATE, "Developing microbial growth with increasing pollution"),
+    ("Gram-positive cocci (chains)", CHEMICAL_STABLE):   (RISK_LOW,      "Limited microbial presence with absent chemical pollution"),
+
+    ("Gram-positive cocci (clusters)", CHEMICAL_SEVERE):   (RISK_HIGH,     "Microorganism clusters with polluted water"),
+    ("Gram-positive cocci (clusters)", CHEMICAL_MODERATE): (RISK_MODERATE, "Microorganism clusters with increasing polluted water"),
+    ("Gram-positive cocci (clusters)", CHEMICAL_STABLE):   (RISK_LOW,      "Minimal microbial contamination and pollution"),
+
+    ("Gram-positive rods", CHEMICAL_SEVERE):   (RISK_HIGH,     "Microbial rods detected with pollution"),
+    ("Gram-positive rods", CHEMICAL_MODERATE): (RISK_MODERATE, "Microbial rods detected with developing pollution"),
+    ("Gram-positive rods", CHEMICAL_STABLE):   (RISK_LOW,      "Possibly microbial rods only"),
+
+    ("Gram-negative cocci", CHEMICAL_SEVERE):   (RISK_HIGH,          "Potential pathogenic bacteria with polluted water"),
+    ("Gram-negative cocci", CHEMICAL_MODERATE): (RISK_MODERATE_HIGH, "Possible harmful microorganisms with developing pollution"),
+    ("Gram-negative cocci", CHEMICAL_STABLE):   (RISK_MODERATE_BIO,  "Microbial presence detected but chemically stable water"),
+}
+
+# The paper's Table 2.3 omits the bare "Gram-positive cocci" class that the
+# MobileNetV2 stand-in can produce. Treat it as the "chains" sub-class —
+# the conservative middle row — until the two-RF morphology model lands.
+GATED_FUSION_FALLBACK = {
+    "Gram-positive cocci": "Gram-positive cocci (chains)",
 }
 
 # ─── DATA LOGGING (only used if FEATURE_DATA_LOGGING = True) ─

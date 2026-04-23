@@ -102,8 +102,15 @@ def generate_report(date_filter=None):
     pdf.cell(0, 12, "Test Summary", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(5)
 
-    # Count risks
-    risk_counts = {"LOW": 0, "MODERATE": 0, "HIGH": 0}
+    # Count risks (5-level Table 2.3 labels + SAFE)
+    risk_counts = {
+        "Safe": 0,
+        "Low-Risk Contamination": 0,
+        "Moderate Biological Risk": 0,
+        "Moderate Risk": 0,
+        "Moderate-High Risk": 0,
+        "High-Risk Contamination": 0,
+    }
     bacteria_counts = {}
     locations = set()
     ph_values = []
@@ -165,24 +172,25 @@ def generate_report(date_filter=None):
 
     # Table header
     pdf.set_font("Helvetica", "B", 9)
-    col_widths = [30, 20, 20, 35, 30, 20, 35]
-    headers = ["Time", "pH", "EC", "Location", "Bacteria", "Conf.", "Risk"]
+    col_widths = [22, 14, 18, 28, 30, 16, 28, 34]
+    headers = ["Time", "pH", "EC", "Location", "Bacteria", "Conf.", "Chem Cond.", "Risk (Table 2.3)"]
 
     for i, header in enumerate(headers):
         pdf.cell(col_widths[i], 8, header, border=1)
     pdf.ln()
 
     # Table rows
-    pdf.set_font("Helvetica", "", 8)
+    pdf.set_font("Helvetica", "", 7)
     for entry in entries:
         row_data = [
             entry.get("time", ""),
             entry.get("ph", ""),
             entry.get("ec_us_cm", ""),
-            entry.get("location", "")[:15],
-            entry.get("bacteria_class", "")[:15],
+            entry.get("location", "")[:12],
+            entry.get("bacteria_class", "")[:14],
             entry.get("confidence_pct", ""),
-            entry.get("risk_level", ""),
+            entry.get("chemical_condition", "")[:14],
+            entry.get("risk_level", "")[:18],
         ]
         for i, val in enumerate(row_data):
             pdf.cell(col_widths[i], 7, str(val), border=1)

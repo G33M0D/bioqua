@@ -10,14 +10,40 @@
 # ============================================================
 
 """
-Learning Module 5: Risk Assessment
-Interactive calculator that combines pH, EC, and bacteria type
-to determine water safety risk level -- just like BIOQUA does.
+Learning Module 5: Risk Assessment (Phase IV Gated Fusion)
+===========================================================
+Interactive walkthrough of how BIOQUA combines Phase II (bacteria class)
+with Phase III (chemical condition) using Table 2.3 of the paper to land
+on one of five Phase IV risk levels. Sources the real table from config.py
+so this module always matches the production logic.
 """
+
+import os
+import sys
+
+# Make the root-level python/ package importable so we can load the real tables
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_PYTHON_DIR = os.path.join(os.path.dirname(_HERE), "python")
+sys.path.insert(0, _PYTHON_DIR)
+
+from config import (  # noqa: E402
+    BACTERIA_CLASSES,
+    CHEMICAL_SEVERE,
+    CHEMICAL_MODERATE,
+    CHEMICAL_STABLE,
+    GATED_FUSION_TABLE,
+    GATED_FUSION_FALLBACK,
+    EC_SPIKE_HIGH,
+    EC_SPIKE_MODERATE,
+    PH_DROP_THRESHOLD,
+    PH_NORMAL_MIN,
+    PH_NORMAL_MAX,
+    RISK_SHORT_CODE,
+)
 
 
 def print_header(title):
-    width = 60
+    width = 64
     print("\n" + "=" * width)
     print(f"  {title}")
     print("=" * width + "\n")
@@ -31,521 +57,259 @@ def pause():
     input("  [Press Enter to continue...]\n")
 
 
-# Risk assessment constants
-BACTERIA_RISK = {
-    "e_coli":        {"name": "E. coli",           "base_risk": 90, "gram": "negative"},
-    "vibrio":        {"name": "Vibrio cholerae",    "base_risk": 95, "gram": "negative"},
-    "salmonella":    {"name": "Salmonella",         "base_risk": 85, "gram": "negative"},
-    "shigella":      {"name": "Shigella",           "base_risk": 85, "gram": "negative"},
-    "campylobacter": {"name": "Campylobacter",      "base_risk": 80, "gram": "negative"},
-    "legionella":    {"name": "Legionella",         "base_risk": 75, "gram": "negative"},
-    "leptospira":    {"name": "Leptospira",         "base_risk": 80, "gram": "negative"},
-    "enterococcus":  {"name": "Enterococcus",       "base_risk": 70, "gram": "positive"},
-    "staphylococcus":{"name": "Staphylococcus",     "base_risk": 60, "gram": "positive"},
-    "bacillus":      {"name": "Bacillus (generic)",  "base_risk": 40, "gram": "positive"},
-    "none":          {"name": "No bacteria detected","base_risk": 0,  "gram": "n/a"},
-}
-
-
 def introduction():
-    print_header("RISK ASSESSMENT: How BIOQUA Decides If Water Is Safe")
+    print_header("RISK ASSESSMENT: The Gated Fusion Logic (Phase IV)")
+    print("""  BIOQUA's four-phase methodology ends with a decision step:
+  Phase II says WHAT kind of bacteria was detected, Phase III
+  says WHAT the chemistry looks like, and Phase IV combines
+  the two using a lookup table — called gated fusion.
 
-    print("""  When BIOQUA tests a water sample, it doesn't just look
-  at ONE measurement. It combines MULTIPLE data points to
-  calculate an overall RISK LEVEL.
+  Why "gated"? Because each risk verdict is gated by BOTH
+  dimensions at once. Gram-negative rods alone is bad news.
+  A high TDS spike alone is bad news. But the same gram-negative
+  rods with STABLE water chemistry is interpreted differently
+  than the same bacteria with a pH-dropping contamination event.
 
-  Think of it like a doctor's checkup. A doctor doesn't just
-  check your temperature -- they also check blood pressure,
-  heart rate, and other signs. Only by looking at everything
-  together can they make a good diagnosis.
-
-  BIOQUA combines three key measurements:
-
-      1. pH          -- Is the water's chemistry balanced?
-      2. EC (uS/cm)  -- How much stuff is dissolved in it?
-      3. Bacteria    -- What (if any) bacteria were detected?
-
-  In this module, YOU will be the BIOQUA system! You'll
-  input water measurements and see how the risk calculator
-  works step by step.
+  This module walks you through Table 2.3 of the research paper
+  (docs/Phase.pdf) and lets you explore the same decision table
+  that the production controller uses.
 """)
     pause()
 
 
-def explain_scoring():
-    print_header("HOW THE RISK SCORE WORKS")
+def explain_tables():
+    print_header("THE THREE TABLES")
+    print("""  Table 2.1 — Phase II Classifications (6 bacteria types)
+  --------------------------------------------------------""")
+    for name in BACTERIA_CLASSES:
+        print(f"    - {name}")
 
-    print("""  BIOQUA uses a point-based risk system from 0 to 100:
+    print("""
+  Table 2.2 — Phase III Classifications (3 chemical conditions)
+  --------------------------------------------------------------
+    - Severe   : High TDS spike + pH drop
+    - Moderate : Moderate TDS increase (or pH outside normal)
+    - Stable   : No TDS spike and normal pH
 
-      RISK SCORE     RISK LEVEL        COLOR     ACTION
-      ----------     ---------------   -------   ----------------
-       0 - 20        LOW               GREEN     Safe to drink
-      21 - 40        MODERATE          YELLOW    Caution advised
-      41 - 60        HIGH              ORANGE    Do not drink
-      61 - 80        VERY HIGH         RED       Dangerous
-      81 - 100       CRITICAL          RED       Extremely unsafe
+  Thresholds the controller uses:""")
+    print(f"    EC_SPIKE_HIGH      = {EC_SPIKE_HIGH} uS/cm")
+    print(f"    EC_SPIKE_MODERATE  = {EC_SPIKE_MODERATE} uS/cm")
+    print(f"    pH drop cutoff     = < {PH_DROP_THRESHOLD}")
+    print(f"    pH normal range    = {PH_NORMAL_MIN} – {PH_NORMAL_MAX}")
 
-  Each factor contributes to the total score:
+    print("""
+  Table 2.3 — Phase IV Risk Assessment (5 levels)
+  ------------------------------------------------
+    1. Low-Risk Contamination          (LOW)
+    2. Moderate Biological Risk        (MOD-BIO)
+    3. Moderate Risk                   (MOD)
+    4. Moderate-High Risk              (MOD-HIGH)
+    5. High-Risk Contamination         (HIGH)
 
-      +-------------------+----------------------------------+
-      | FACTOR            | HOW IT ADDS RISK                 |
-      +-------------------+----------------------------------+
-      | pH                | 0 pts if 6.5-8.5 (safe range)   |
-      |                   | +5-15 pts if slightly off        |
-      |                   | +20-30 pts if very off           |
-      +-------------------+----------------------------------+
-      | EC                | 0 pts if < 800 uS/cm            |
-      |                   | +5-10 pts if 800-1500            |
-      |                   | +15-25 pts if > 1500             |
-      +-------------------+----------------------------------+
-      | Bacteria type     | 0 pts if none detected           |
-      |                   | +40-95 pts depending on species  |
-      |                   | (E. coli and Vibrio are highest) |
-      +-------------------+----------------------------------+
-
-  The final score is the SUM of all factors, capped at 100.
-
-  IMPORTANT: If ANY bacteria are detected in drinking water,
-  the risk is automatically at least MODERATE (score >= 40).
-  This matches WHO/EPA guidelines: zero bacteria tolerance.
+  Plus a pseudo-level BIOQUA adds for "no bacteria + stable chemistry":
+    0. Safe                            (SAFE)
 """)
     pause()
 
 
-def calculate_ph_risk(ph):
-    """Calculate risk points from pH value."""
-    if 6.5 <= ph <= 8.5:
-        points = 0
-        explanation = "pH is within the safe range (6.5-8.5). No risk added."
-    elif 6.0 <= ph < 6.5 or 8.5 < ph <= 9.0:
-        points = 8
-        explanation = (f"pH {ph} is slightly outside the safe range. "
-                       "Water may taste off. Bacteria removal efficiency "
-                       "slightly reduced. (+8 risk points)")
-    elif 5.0 <= ph < 6.0 or 9.0 < ph <= 10.0:
-        points = 18
-        explanation = (f"pH {ph} is moderately outside safe range. "
-                       "May indicate chemical contamination. Can corrode "
-                       "pipes and leach metals. (+18 risk points)")
-    elif ph < 5.0:
-        points = 30
-        explanation = (f"pH {ph} is VERY acidic! This is dangerous. "
-                       "Indicates serious contamination or industrial "
-                       "waste. Can cause chemical burns. (+30 risk points)")
-    else:  # ph > 10.0
-        points = 30
-        explanation = (f"pH {ph} is VERY alkaline! This is dangerous. "
-                       "Indicates chemical contamination. Can cause "
-                       "skin irritation and digestive issues. (+30 risk points)")
-    return points, explanation
+def classify_chemistry(ph, ec):
+    """Mirror of controller.derive_chemical_condition — kept local to avoid
+    a circular import in the learning module."""
+    if ec >= EC_SPIKE_HIGH and ph < PH_DROP_THRESHOLD:
+        return CHEMICAL_SEVERE
+    if ec >= EC_SPIKE_MODERATE or ph < PH_NORMAL_MIN or ph > PH_NORMAL_MAX:
+        return CHEMICAL_MODERATE
+    return CHEMICAL_STABLE
 
 
-def calculate_ec_risk(ec):
-    """Calculate risk points from EC value."""
-    if ec < 800:
-        points = 0
-        explanation = (f"EC {ec} uS/cm is within acceptable range. "
-                       "Dissolved solids are normal. No risk added.")
-    elif 800 <= ec < 1500:
-        points = 8
-        explanation = (f"EC {ec} uS/cm is elevated. Higher than normal "
-                       "dissolved solids -- could indicate mineral "
-                       "buildup or mild contamination. (+8 risk points)")
-    elif 1500 <= ec < 3000:
-        points = 18
-        explanation = (f"EC {ec} uS/cm is HIGH. Significant dissolved "
-                       "solids present. Water may taste salty or bitter. "
-                       "Could indicate sewage or agricultural runoff. "
-                       "(+18 risk points)")
-    else:
-        points = 25
-        explanation = (f"EC {ec} uS/cm is VERY HIGH. Water has extreme "
-                       "levels of dissolved substances. Likely contaminated "
-                       "by industrial waste, heavy metals, or concentrated "
-                       "sewage. (+25 risk points)")
-    return points, explanation
+def lookup(bacteria, chemistry):
+    """Return (risk_level, interpretation) from the table, applying the
+    Gram-positive-cocci fallback if needed."""
+    bacteria = GATED_FUSION_FALLBACK.get(bacteria, bacteria)
+    return GATED_FUSION_TABLE.get((bacteria, chemistry), (None, None))
 
 
-def calculate_bacteria_risk(bacteria_key):
-    """Calculate risk points from bacteria type."""
-    info = BACTERIA_RISK[bacteria_key]
-    points = info["base_risk"]
-    name = info["name"]
+def preset_scenarios():
+    print_header("PRESET SCENARIOS: The Table in Action")
 
-    if bacteria_key == "none":
-        explanation = "No bacteria detected. This is the ideal result!"
-    elif points >= 85:
-        explanation = (f"{name} detected! This is a CRITICAL pathogen. "
-                       f"Gram-{info['gram']}. Known to cause severe, "
-                       f"potentially fatal disease through contaminated "
-                       f"water. (+{points} risk points)")
-    elif points >= 70:
-        explanation = (f"{name} detected. This is a DANGEROUS pathogen. "
-                       f"Gram-{info['gram']}. Causes significant illness "
-                       f"and indicates fecal or environmental contamination. "
-                       f"(+{points} risk points)")
-    elif points >= 40:
-        explanation = (f"{name} detected. Gram-{info['gram']}. While not "
-                       f"the most dangerous waterborne pathogen, any "
-                       f"bacteria in drinking water is concerning. "
-                       f"(+{points} risk points)")
-    else:
-        explanation = (f"{name} detected. Gram-{info['gram']}. Low "
-                       f"pathogenic risk in water, but presence still "
-                       f"indicates contamination. (+{points} risk points)")
+    scenarios = [
+        ("Clean tap water",          7.2,  350,  None),
+        ("River with Gram-neg rods", 7.0,  400,  "Gram-negative rods"),
+        ("Flood + E.coli-like",      6.0,  2800, "Gram-negative rods"),
+        ("Mild pollution + cocci",   6.4,  1700, "Gram-positive cocci (clusters)"),
+        ("Clear well + strep",       7.1,  450,  "Gram-positive cocci (chains)"),
+        ("Sewage + enterococcus",    5.8,  3200, "Gram-negative cocci"),
+    ]
 
-    return points, explanation
+    for name, ph, ec, bac in scenarios:
+        chem = classify_chemistry(ph, ec)
+        if bac is None:
+            verdict = "Safe" if chem == CHEMICAL_STABLE else "Chemistry-only risk"
+            interp = "No bacteria detected"
+        else:
+            level, interp = lookup(bac, chem)
+            verdict = level or "Unrecognized bacteria class"
 
+        print(f"  {name}")
+        print(f"    pH={ph}  EC={ec}  Phase II={bac or '—'}")
+        print(f"    Phase III: {chem}")
+        print(f"    Phase IV:  {verdict}")
+        print(f"      {interp}")
+        print()
 
-def get_risk_level(score):
-    """Return risk level string and recommendations."""
-    if score <= 20:
-        level = "LOW"
-        color = "GREEN"
-        bar = "[##########....................] 0-20"
-        recommendation = (
-            "Water appears safe for drinking based on tested parameters.\n"
-            "  Continue regular monitoring as a precaution."
-        )
-    elif score <= 40:
-        level = "MODERATE"
-        color = "YELLOW"
-        bar = "[..........##########..........] 21-40"
-        recommendation = (
-            "Caution advised. One or more parameters are outside ideal\n"
-            "  range. Consider additional testing or treatment before\n"
-            "  drinking. Boiling may help if bacteria is present."
-        )
-    elif score <= 60:
-        level = "HIGH"
-        color = "ORANGE"
-        bar = "[....................##########] 41-60"
-        recommendation = (
-            "DO NOT DRINK this water without treatment. Multiple risk\n"
-            "  factors detected. Boil water for at least 1 minute or use\n"
-            "  a certified water filter. Seek an alternative source."
-        )
-    elif score <= 80:
-        level = "VERY HIGH"
-        color = "RED"
-        bar = "[....................##########] 61-80"
-        recommendation = (
-            "DANGEROUS. This water poses a serious health risk. Do NOT\n"
-            "  drink, cook with, or bathe in this water. Seek emergency\n"
-            "  alternative water supply. Report to local health authority."
-        )
-    else:
-        level = "CRITICAL"
-        color = "RED"
-        bar = "[....................##########] 81-100"
-        recommendation = (
-            "EXTREMELY UNSAFE. This water is critically contaminated.\n"
-            "  Immediate health risk. Avoid ALL contact. Alert local\n"
-            "  health authorities immediately. Seek emergency water supply."
-        )
-
-    return level, color, bar, recommendation
+    pause()
 
 
 def interactive_calculator():
-    print_header("INTERACTIVE RISK CALCULATOR")
-    print("  You are now the BIOQUA system! Enter water sample")
-    print("  measurements and see the risk assessment in real time.\n")
-    print("  (Type 'quit' at any prompt to skip to the quiz)\n")
+    print_header("INTERACTIVE GATED FUSION CALCULATOR")
+    print("  Enter pH, EC, and a bacteria class — BIOQUA will show you")
+    print("  the exact Table 2.3 row that triggers, plus the resulting")
+    print("  risk level. Type 'quit' at any prompt to move on.\n")
+
+    # Build the selectable bacteria list — include "none" for chemistry-only cases
+    selectable = ["(none detected)"] + BACTERIA_CLASSES
 
     while True:
         print_subheader("NEW WATER SAMPLE")
 
-        # Get pH
         try:
-            ph_input = input("  Enter pH value (0-14): ").strip()
-            if ph_input.lower() == "quit":
-                break
-            ph = float(ph_input)
-            if ph < 0 or ph > 14:
-                print("  pH must be between 0 and 14. Try again.\n")
-                continue
+            ph_raw = input("  pH (0–14): ").strip()
+            if ph_raw.lower() == "quit":
+                return
+            ph = float(ph_raw)
         except ValueError:
-            print("  Please enter a number. Try again.\n")
+            print("  Please enter a number.\n")
             continue
 
-        # Get EC
         try:
-            ec_input = input("  Enter EC value in uS/cm (0-10000): ").strip()
-            if ec_input.lower() == "quit":
-                break
-            ec = float(ec_input)
-            if ec < 0:
-                print("  EC cannot be negative. Try again.\n")
-                continue
+            ec_raw = input("  EC in uS/cm (0–10000): ").strip()
+            if ec_raw.lower() == "quit":
+                return
+            ec = float(ec_raw)
         except ValueError:
-            print("  Please enter a number. Try again.\n")
+            print("  Please enter a number.\n")
             continue
 
-        # Get bacteria type
-        print("\n  Select bacteria detected:")
-        bacteria_options = list(BACTERIA_RISK.keys())
-        for i, key in enumerate(bacteria_options, 1):
-            info = BACTERIA_RISK[key]
-            gram_str = f"(Gram-{info['gram']})" if info['gram'] != 'n/a' else ""
-            print(f"    {i:2d}. {info['name']} {gram_str}")
-
+        print("\n  Bacteria class:")
+        for i, name in enumerate(selectable, 1):
+            print(f"    {i}. {name}")
         try:
-            bac_input = input("\n  Enter number (1-{}): ".format(
-                len(bacteria_options))).strip()
-            if bac_input.lower() == "quit":
-                break
-            bac_idx = int(bac_input) - 1
-            if bac_idx < 0 or bac_idx >= len(bacteria_options):
-                print("  Invalid selection. Try again.\n")
+            bac_raw = input("\n  Pick a number: ").strip()
+            if bac_raw.lower() == "quit":
+                return
+            bac_idx = int(bac_raw) - 1
+            if bac_idx < 0 or bac_idx >= len(selectable):
+                print("  Out of range.\n")
                 continue
-            bacteria_key = bacteria_options[bac_idx]
+            bacteria = None if bac_idx == 0 else selectable[bac_idx]
         except ValueError:
-            print("  Please enter a number. Try again.\n")
+            print("  Please enter a number.\n")
             continue
 
-        # Calculate risk
-        print("\n" + "=" * 56)
-        print("  BIOQUA RISK ASSESSMENT REPORT")
-        print("=" * 56)
+        chem = classify_chemistry(ph, ec)
 
-        print_subheader("INPUT DATA")
-        print(f"  pH:        {ph}")
-        print(f"  EC:        {ec} uS/cm")
-        print(f"  TDS (est): {ec * 0.6:.0f} ppm")
-        print(f"  Bacteria:  {BACTERIA_RISK[bacteria_key]['name']}")
+        print("\n  Phase II (bacteria):    ", bacteria or "none detected")
+        print("  Phase III (chemistry):  ", chem)
 
-        print_subheader("ANALYSIS: pH Factor")
-        ph_risk, ph_explanation = calculate_ph_risk(ph)
-        print(f"  {ph_explanation}")
-
-        print_subheader("ANALYSIS: EC Factor")
-        ec_risk, ec_explanation = calculate_ec_risk(ec)
-        print(f"  {ec_explanation}")
-
-        print_subheader("ANALYSIS: Bacteria Factor")
-        bac_risk, bac_explanation = calculate_bacteria_risk(bacteria_key)
-        print(f"  {bac_explanation}")
-
-        # Total score
-        total = min(ph_risk + ec_risk + bac_risk, 100)
-        level, color, bar, recommendation = get_risk_level(total)
-
-        print_subheader("FINAL RISK SCORE")
-        print(f"  pH risk:       {ph_risk:3d} points")
-        print(f"  EC risk:       {ec_risk:3d} points")
-        print(f"  Bacteria risk: {bac_risk:3d} points")
-        print(f"  --------------------------")
-        print(f"  TOTAL:         {total:3d} / 100\n")
-        print(f"  Risk Level:    {level}")
-        print(f"  Status Color:  {color}")
-        print(f"  {bar}\n")
-
-        print_subheader("RECOMMENDATION")
-        print(f"  {recommendation}\n")
-
-        # Show what BIOQUA would do
-        print_subheader("BIOQUA RESPONSE")
-        if total <= 20:
-            print("  BIOQUA LED:  GREEN (steady)")
-            print("  BIOQUA LCD:  'Water Safe - All parameters normal'")
-            print("  Cloud upload:   Routine data logged")
-        elif total <= 40:
-            print("  BIOQUA LED:  YELLOW (slow blink)")
-            print("  BIOQUA LCD:  'Caution - Review parameters'")
-            print("  Cloud upload:   Flagged for review")
-        elif total <= 60:
-            print("  BIOQUA LED:  ORANGE (fast blink)")
-            print("  BIOQUA LCD:  'WARNING - Do not drink!'")
-            print("  Cloud upload:   Alert sent to operator")
+        if bacteria is None:
+            if chem == CHEMICAL_STABLE:
+                level = "Safe"
+                interp = "No bacteria detected and chemistry within safe bounds"
+            elif chem == CHEMICAL_MODERATE:
+                level = "Moderate Risk"
+                interp = "Developing chemical pollution with no bacteria detected"
+            else:
+                level = "High-Risk Contamination"
+                interp = "Severe chemical pollution with no bacteria detected"
         else:
-            print("  BIOQUA LED:  RED (rapid blink)")
-            print("  BIOQUA LCD:  'DANGER - Water contaminated!'")
-            print("  Cloud upload:   Emergency alert sent!")
-            print("  SMS/Email:      Notification to health authority")
+            level, interp = lookup(bacteria, chem)
+            if level is None:
+                level = "Unknown"
+                interp = "No matching row in Table 2.3"
 
-        print()
+        short = RISK_SHORT_CODE.get(level, "?")
+        print(f"  Phase IV (risk):        {level}  (LCD shows: {short})")
+        print(f"    {interp}\n")
 
-        another = input("  Test another sample? (y/n): ").strip().lower()
-        if another != "y":
-            break
-        print()
-
-
-def preset_scenarios():
-    print_header("PRESET SCENARIOS: See How Risk Changes")
-
-    scenarios = [
-        {
-            "name": "Clean Tap Water",
-            "ph": 7.2, "ec": 350,
-            "bacteria": "none",
-            "description": "Normal treated municipal water"
-        },
-        {
-            "name": "Slightly Off Well Water",
-            "ph": 6.2, "ec": 950,
-            "bacteria": "none",
-            "description": "Well water with slightly low pH and elevated minerals"
-        },
-        {
-            "name": "Contaminated River Water",
-            "ph": 7.5, "ec": 600,
-            "bacteria": "e_coli",
-            "description": "Looks clean but E. coli detected"
-        },
-        {
-            "name": "Flood Water",
-            "ph": 6.8, "ec": 2500,
-            "bacteria": "leptospira",
-            "description": "After a flood -- high dissolved solids and bacteria"
-        },
-        {
-            "name": "Industrial Contamination",
-            "ph": 4.2, "ec": 4000,
-            "bacteria": "none",
-            "description": "Acidic water near an industrial site"
-        },
-    ]
-
-    for i, s in enumerate(scenarios, 1):
-        ph_risk, _ = calculate_ph_risk(s["ph"])
-        ec_risk, _ = calculate_ec_risk(s["ec"])
-        bac_risk, _ = calculate_bacteria_risk(s["bacteria"])
-        total = min(ph_risk + ec_risk + bac_risk, 100)
-        level, color, _, _ = get_risk_level(total)
-
-        bac_name = BACTERIA_RISK[s["bacteria"]]["name"]
-
-        print(f"  Scenario {i}: {s['name']}")
-        print(f"  {s['description']}")
-        print(f"  pH={s['ph']}  EC={s['ec']}  Bacteria={bac_name}")
-        print(f"  Risk Score: {total}/100 -> {level} ({color})")
-        print()
-
-    print("""  NOTICE how Scenario 3 (Contaminated River Water) has a
-  higher risk than Scenario 5 (Industrial Contamination),
-  even though the industrial water has worse pH and EC.
-
-  That's because BACTERIA presence is the most heavily
-  weighted factor. Clean-looking water with E. coli is
-  MORE dangerous than acidic water without bacteria!
-
-  This is exactly how BIOQUA prioritizes threats.
-""")
-    pause()
+        again = input("  Test another sample? (y/n): ").strip().lower()
+        if again != "y":
+            return
 
 
 def quiz():
-    print_header("QUIZ TIME! (4 Questions)")
-    print("  Test your understanding of risk assessment.\n")
+    print_header("QUIZ (4 questions)")
 
     score = 0
 
-    # Q1
-    print("  Question 1:")
-    print("  Water has pH 7.0, EC 400, and no bacteria detected.")
-    print("  What is the risk level?")
-    print("    A) CRITICAL -- you can never be too careful")
-    print("    B) MODERATE -- some risk always exists")
-    print("    C) LOW -- all parameters are within safe ranges")
-    print("    D) HIGH -- EC is too high")
-    answer = input("\n  Your answer (A/B/C/D): ").strip().upper()
-    if answer == "C":
-        print("  Correct! pH 7.0 (safe), EC 400 (safe), no bacteria = LOW risk.\n")
+    print("  Q1. Which phase combines bacteria class with chemistry?")
+    print("    A) Phase I   B) Phase II   C) Phase III   D) Phase IV")
+    if input("\n  Your answer: ").strip().upper() == "D":
+        print("  Correct — Phase IV is the gated fusion step.\n")
         score += 1
     else:
-        print("  Incorrect. The answer is C -- all values are normal, so LOW risk.\n")
+        print("  Answer is D. Phase IV is the fusion step.\n")
 
-    # Q2
-    print("  Question 2:")
-    print("  Water looks crystal clear with perfect pH (7.2) and low")
-    print("  EC (200), but E. coli is detected. Is this water safe?")
-    print("    A) Yes -- the pH and EC are perfect")
-    print("    B) No -- ANY bacteria in drinking water makes it unsafe")
-    print("    C) Maybe -- it depends on how much E. coli")
-    print("    D) Yes -- E. coli is harmless")
-    answer = input("\n  Your answer (A/B/C/D): ").strip().upper()
-    if answer == "B":
-        print("  Correct! Zero tolerance for bacteria in drinking water.\n"
-              "  Even one E. coli means the water is unsafe.\n")
+    print("  Q2. Gram-negative rods + Stable chemistry = ?")
+    print("    A) Low-Risk Contamination")
+    print("    B) Moderate Biological Risk")
+    print("    C) High-Risk Contamination")
+    print("    D) Safe")
+    if input("\n  Your answer: ").strip().upper() == "B":
+        print("  Correct — Table 2.3: bacteria detected but chemistry is fine.\n")
         score += 1
     else:
-        print("  Incorrect. The answer is B -- zero bacteria tolerance.\n")
+        print("  Answer is B. Bacteria alone without chemistry spike = Moderate Biological Risk.\n")
 
-    # Q3
-    print("  Question 3:")
-    print("  Why does BIOQUA combine MULTIPLE measurements instead")
-    print("  of just testing for bacteria?")
-    print("    A) To make the device more expensive")
-    print("    B) Because one measurement alone doesn't tell the full")
-    print("       story -- multiple data points give a complete picture")
-    print("    C) Because bacteria tests are unreliable")
-    print("    D) Just for extra credit")
-    answer = input("\n  Your answer (A/B/C/D): ").strip().upper()
-    if answer == "B":
-        print("  Correct! pH and EC can reveal chemical contamination that\n"
-              "  bacteria testing alone would miss. The combination gives\n"
-              "  a much more reliable safety assessment.\n")
+    print("  Q3. What single chemistry signature is treated as SEVERE?")
+    print("    A) High TDS spike alone")
+    print("    B) pH drop alone")
+    print("    C) High TDS spike AND pH drop together")
+    print("    D) Any pH outside 6.5–8.5")
+    if input("\n  Your answer: ").strip().upper() == "C":
+        print("  Correct — both signals together is the Severe row of Table 2.2.\n")
         score += 1
     else:
-        print("  Incorrect. The answer is B -- multiple data points give\n"
-              "  a complete picture of water safety.\n")
+        print("  Answer is C. Table 2.2 requires both signals for Severe.\n")
 
-    # Q4
-    print("  Question 4:")
-    print("  A risk score of 75/100 means the BIOQUA LED would show:")
-    print("    A) GREEN (steady) -- everything is fine")
-    print("    B) YELLOW (slow blink) -- minor caution")
-    print("    C) RED (rapid blink) -- dangerous contamination")
-    print("    D) No light -- the device is broken")
-    answer = input("\n  Your answer (A/B/C/D): ").strip().upper()
-    if answer == "C":
-        print("  Correct! A score of 75 is VERY HIGH risk = RED alert.\n")
+    print("  Q4. The LCD shows 'Risk: MOD-HIGH'. Which combination produced it?")
+    print("    A) Gram-positive rods + Stable water")
+    print("    B) Gram-negative rods + Moderate TDS")
+    print("    C) No bacteria + Stable water")
+    print("    D) Gram-positive cocci (clusters) + Moderate TDS")
+    if input("\n  Your answer: ").strip().upper() == "B":
+        print("  Correct — Moderate-High Risk only comes from Gram-negative bacteria\n"
+              "  crossed with Moderate chemistry per Table 2.3.\n")
         score += 1
     else:
-        print("  Incorrect. The answer is C -- RED (rapid blink) for\n"
-              "  a very high risk score.\n")
+        print("  Answer is B. Moderate-High is reserved for Gram-negative × Moderate.\n")
 
     return score
 
 
 def main():
-    print("\n" + "*" * 60)
+    print("\n" + "*" * 64)
     print("  BIOQUA LEARNING MODULE 5")
-    print("  Risk Assessment: Combining Data for Water Safety")
-    print("*" * 60)
+    print("  Risk Assessment: Phase IV Gated Fusion")
+    print("*" * 64)
     pause()
 
     introduction()
-    explain_scoring()
+    explain_tables()
     preset_scenarios()
 
-    print_header("YOUR TURN: Interactive Risk Calculator")
-    print("  Now try entering your own water measurements!\n")
+    print_header("YOUR TURN")
     interactive_calculator()
 
     score = quiz()
 
-    print_header("MODULE COMPLETE!")
-    print(f"  Module complete! You scored {score}/4")
-    print()
+    print_header("MODULE COMPLETE")
+    print(f"  You scored {score}/4.")
     if score == 4:
-        print("  PERFECT SCORE! You understand how BIOQUA assesses risk!")
-    elif score >= 3:
-        print("  Great job! You've got a solid grasp of risk assessment.")
+        print("  Perfect — you now read Table 2.3 the same way the controller does.")
+    elif score >= 2:
+        print("  Good — revisit the preset scenarios if any rows surprised you.")
     else:
-        print("  Review the scoring system and try again!")
-    print()
-    print("  You've completed all BIOQUA learning modules!")
-    print("  You now understand:")
-    print("    - Gram staining (Module 1)")
-    print("    - Bacteria shapes (Module 2)")
-    print("    - How AI detects bacteria (Module 3)")
-    print("    - Water quality standards (Module 4)")
-    print("    - Risk assessment (Module 5)")
-    print()
-    print("  Keep learning, keep building, keep making water safer!")
+        print("  Re-read docs/Phase.pdf §A.2.4 and run this module again.")
     print()
 
 

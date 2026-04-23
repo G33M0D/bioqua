@@ -44,7 +44,10 @@ CSV_HEADERS = [
     "ec_us_cm",
     "bacteria_class",
     "confidence_pct",
-    "risk_level",
+    "risk_short",       # LCD-safe code: LOW / MOD / MOD-BIO / MOD-HIGH / HIGH / SAFE
+    "risk_level",       # Table 2.3 full label (e.g. "Moderate Biological Risk")
+    "chemical_condition",  # Table 2.2 classification
+    "interpretation",   # Table 2.3 interpretation column
     "image_file",
     "notes",
 ]
@@ -85,7 +88,7 @@ class DataLogger:
             ec: EC sensor reading (microsiemens/cm)
             bacteria_class: AI classification result (e.g., "Gram+ Cocci")
             confidence: AI confidence (0.0 - 1.0)
-            risk: Risk level ("LOW", "MODERATE", "HIGH")
+            risk: Either a RiskResult (preferred) or a short-code string
             frame: Microscope image (numpy array) — saved if provided
             notes: Optional notes about this test
         """
@@ -104,6 +107,18 @@ class DataLogger:
             if cv2.imwrite(filepath, frame):
                 image_file = os.path.relpath(filepath, PROJECT_ROOT)
 
+        # Unpack RiskResult if provided; otherwise treat as legacy short code
+        if hasattr(risk, "short_code"):
+            risk_short = risk.short_code
+            risk_level = risk.level
+            chem_condition = risk.chemical_condition
+            interpretation = risk.interpretation
+        else:
+            risk_short = str(risk)
+            risk_level = str(risk)
+            chem_condition = ""
+            interpretation = ""
+
         # Append to CSV
         row = [
             timestamp,
@@ -114,7 +129,10 @@ class DataLogger:
             f"{ec:.1f}",
             bacteria_class,
             f"{confidence:.1%}",
-            risk,
+            risk_short,
+            risk_level,
+            chem_condition,
+            interpretation,
             image_file,
             notes,
         ]
@@ -142,13 +160,14 @@ class DataLogger:
             return "No tests logged yet."
 
         total = len(entries)
-        risk_counts = {"LOW": 0, "MODERATE": 0, "HIGH": 0}
+        risk_counts = {"SAFE": 0, "LOW": 0, "MOD-BIO": 0, "MOD": 0, "MOD-HIGH": 0, "HIGH": 0}
         locations = set()
 
         for entry in entries:
-            risk = entry.get("risk_level", "")
-            if risk in risk_counts:
-                risk_counts[risk] += 1
+            # Prefer the short code; fall back to full label for legacy rows
+            short = entry.get("risk_short") or entry.get("risk_level", "")
+            if short in risk_counts:
+                risk_counts[short] += 1
             locations.add(entry.get("location", "Unknown"))
 
         first_date = entries[0].get("date", "?")
@@ -162,9 +181,12 @@ Date range:   {first_date} to {last_date}
 Locations:    {', '.join(sorted(locations))}
 
 Risk breakdown:
-  LOW:      {risk_counts['LOW']}
-  MODERATE: {risk_counts['MODERATE']}
-  HIGH:     {risk_counts['HIGH']}
+  SAFE:      {risk_counts['SAFE']}
+  LOW:       {risk_counts['LOW']}
+  MOD-BIO:   {risk_counts['MOD-BIO']}
+  MOD:       {risk_counts['MOD']}
+  MOD-HIGH:  {risk_counts['MOD-HIGH']}
+  HIGH:      {risk_counts['HIGH']}
 """
         return summary
 

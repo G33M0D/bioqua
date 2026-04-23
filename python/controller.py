@@ -245,36 +245,81 @@ def classify_with_hsv(frame):
     return result, confidence
 
 
+def derive_chemical_condition(ph, ec):
+    """Map pH + EC readings to one of Table 2.2's three Phase III classifications.
+
+    - Severe    : High TDS spike AND pH drop
+    - Moderate  : Moderate TDS increase (regardless of pH) OR pH outside normal
+    - Stable    : No TDS spike AND normal pH
+    """
+    high_tds = ec >= EC_SPIKE_HIGH
+    moderate_tds = ec >= EC_SPIKE_MODERATE
+    ph_drop = ph < PH_DROP_THRESHOLD
+    ph_off = ph < PH_NORMAL_MIN or ph > PH_NORMAL_MAX
+
+    if high_tds and ph_drop:
+        return CHEMICAL_SEVERE
+    if moderate_tds or ph_off:
+        return CHEMICAL_MODERATE
+    return CHEMICAL_STABLE
+
+
+class RiskResult:
+    """Structured risk output. Behaves like the old string for backwards compat."""
+
+    __slots__ = ("short_code", "level", "interpretation", "chemical_condition", "bacteria_paper_class")
+
+    def __init__(self, short_code, level, interpretation, chemical_condition, bacteria_paper_class):
+        self.short_code = short_code
+        self.level = level
+        self.interpretation = interpretation
+        self.chemical_condition = chemical_condition
+        self.bacteria_paper_class = bacteria_paper_class
+
+    def __str__(self):
+        return self.short_code
+
+    def __eq__(self, other):
+        if isinstance(other, RiskResult):
+            return self.level == other.level
+        return self.short_code == other
+
+
 def calculate_risk(ph, ec, bacteria_class):
+    """Combine Phase II (bacteria) + Phase III (chemistry) → Phase IV risk.
+
+    Implements Table 2.3 of docs/Phase.pdf. Returns a RiskResult whose str()
+    is the short code (LOW/MOD/MOD-BIO/MOD-HIGH/HIGH/SAFE) — so legacy callers
+    that treat the return value as a string still work.
     """
-    Combine sensor readings + bacteria classification into a risk level.
+    chemical_condition = derive_chemical_condition(ph, ec)
 
-    Risk Levels:
-      HIGH     = Gram-negative detected OR extreme pH
-      MODERATE = Any bacteria detected OR pH/EC slightly off
-      LOW      = Clean water, normal readings
-    """
-    # Extreme pH = always high risk (wider margin than normal range)
-    extreme_low = PH_NORMAL_MIN - 1.5   # 5.0 by default
-    extreme_high = PH_NORMAL_MAX + 0.5  # 9.0 by default
-    if ph < extreme_low or ph > extreme_high:
-        return "HIGH"
+    if bacteria_class in ("No Bacteria", "No Model", "Uncertain", ""):
+        # No biological finding — the paper's Table 2.3 doesn't cover this,
+        # so fall back to the chemistry alone.
+        if chemical_condition == CHEMICAL_SEVERE:
+            level = RISK_HIGH
+            interp = "Severe chemical pollution with no bacteria detected"
+        elif chemical_condition == CHEMICAL_MODERATE:
+            level = RISK_MODERATE
+            interp = "Developing chemical pollution with no bacteria detected"
+        else:
+            level = RISK_NONE
+            interp = "No bacteria detected and chemistry within safe bounds"
+        return RiskResult(RISK_SHORT_CODE[level], level, interp, chemical_condition, None)
 
-    # Gram-negative bacteria = potential pathogens
-    if "Gram-" in bacteria_class:
-        return "HIGH"
+    paper_class = CLASS_NAME_TO_PAPER_CLASS.get(bacteria_class, bacteria_class)
+    paper_class = GATED_FUSION_FALLBACK.get(paper_class, paper_class)
 
-    # Slightly abnormal pH or EC
-    if ph < PH_NORMAL_MIN or ph > PH_NORMAL_MAX:
-        return "MODERATE"
-    if ec > EC_NORMAL_MAX:
-        return "MODERATE"
+    row = GATED_FUSION_TABLE.get((paper_class, chemical_condition))
+    if row is None:
+        # Unknown bacteria class — assume worst-case biological risk
+        return RiskResult(RISK_SHORT_CODE[RISK_MODERATE_BIO], RISK_MODERATE_BIO,
+                          f"Unrecognized bacteria class '{bacteria_class}'",
+                          chemical_condition, paper_class)
 
-    # Any bacteria present
-    if bacteria_class != "No Bacteria" and bacteria_class != "No Model" and bacteria_class != "Uncertain":
-        return "MODERATE"
-
-    return "LOW"
+    level, interp = row
+    return RiskResult(RISK_SHORT_CODE[level], level, interp, chemical_condition, paper_class)
 
 
 def read_arduino_sensors(arduino):
@@ -398,14 +443,22 @@ def main():
             else:
                 bacteria_class, confidence = classify_with_hsv(frame)
 
-            # Calculate risk
-            risk = calculate_risk(last_ph, last_ec, bacteria_class)
+            # Calculate risk via Table 2.3 gated fusion
+            risk_result = calculate_risk(last_ph, last_ec, bacteria_class)
+            risk = risk_result.short_code
 
             # Display on laptop screen
             display_frame = frame.copy()
 
-            # Color-coded risk bar
-            risk_colors = {"LOW": (0, 200, 0), "MODERATE": (0, 165, 255), "HIGH": (0, 0, 255)}
+            # Color-coded risk bar — matches the 5 paper risk levels (+ SAFE)
+            risk_colors = {
+                "SAFE":     (0, 200, 0),
+                "LOW":      (0, 200, 0),
+                "MOD-BIO":  (0, 200, 200),
+                "MOD":      (0, 165, 255),
+                "MOD-HIGH": (0, 100, 255),
+                "HIGH":     (0, 0, 255),
+            }
             color = risk_colors.get(risk, (255, 255, 255))
 
             bar_height = 50 if not _has_arduino else 40
@@ -425,7 +478,7 @@ def main():
 
             # Log data BEFORE updating last_sent_result (so the check works)
             if data_logger and result_changed and bacteria_class not in ("No Model",):
-                data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk, frame)
+                data_logger.log(last_ph, last_ec, bacteria_class, confidence, risk_result, frame)
 
             # Send result to Arduino LCD — on change, or every 2 seconds to keep LCD fresh
             now = time.time()
