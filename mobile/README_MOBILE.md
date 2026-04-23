@@ -115,15 +115,23 @@ Replace the hardcoded values with your actual classification output.
 
 #### 6. Color-code the risk label
 
+BIOQUA emits the Table 2.3 short code for the risk field. There are six possible values (five paper levels + SAFE):
+
 ```
 when clockReceive.Timer (add to existing block)
-  -- After parsing, update risk color
+  -- After parsing, update risk color (checked in order, most-severe first)
   if lblRisk.Text contains "HIGH" then
-    set lblRisk.TextColor to red
-  else if lblRisk.Text contains "MODERATE" then
-    set lblRisk.TextColor to orange
+    set lblRisk.TextColor to red              -- High-Risk Contamination
+  else if lblRisk.Text contains "MOD-HIGH" then
+    set lblRisk.TextColor to redOrange        -- Moderate-High Risk
+  else if lblRisk.Text contains "MOD-BIO" then
+    set lblRisk.TextColor to amber            -- Moderate Biological Risk
+  else if lblRisk.Text contains "MOD" then
+    set lblRisk.TextColor to orange           -- Moderate Risk
   else if lblRisk.Text contains "LOW" then
-    set lblRisk.TextColor to green
+    set lblRisk.TextColor to green            -- Low-Risk Contamination
+  else if lblRisk.Text contains "SAFE" then
+    set lblRisk.TextColor to green            -- No bacteria + stable chemistry
   end if
 ```
 
@@ -157,7 +165,7 @@ This requires zero coding and works in under 2 minutes.
    ```
 8. To send a classification result back, type in the input field:
    ```
-   result:SAFE,bacteria:None,risk:LOW
+   result:SAFE,bacteria:None,risk:SAFE
    ```
    and tap Send. The ESP32 LCD will update accordingly.
 
@@ -194,7 +202,9 @@ Example: `pH:7.20,EC:450.0,status:IDLE\n`
 ```
 result:<string>,bacteria:<string>,risk:<string>\n
 ```
-Example: `result:CONTAMINATED,bacteria:E.coli,risk:HIGH\n`
+Example: `result:CONTAMINATED,bacteria:Gram-negative rods,risk:HIGH\n`
+
+Valid values for `risk`: `SAFE` / `LOW` / `MOD-BIO` / `MOD` / `MOD-HIGH` / `HIGH` (Table 2.3 short codes).
 
 ### Status values:
 - `IDLE` -- waiting, no classification running

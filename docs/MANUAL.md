@@ -8,12 +8,84 @@ Authors: Agreda, G.M., Joven, C.L., Mendez, A.V., Tangao, W., Zamora, G.D. | Yea
 
 This manual is your complete guide to setting up, running, customizing, and troubleshooting BIOQUA. It also includes a section to help you write your science research report.
 
+The authoritative methodology — tables, references, acceptance criteria — is [docs/Phase.pdf](Phase.pdf). This manual is the practical companion that explains how to build and run the system.
+
 **How to use this manual:**
 
 - **First time?** Start at Part 1 and follow every step in order.
 - **Already set up?** Jump to Part 2 to customize settings.
 - **Something broken?** Go straight to Part 3.
 - **Writing your report?** Part 4 has explanations, analogies, and sample sentences you can adapt.
+
+## Where the code lives
+
+- **GitHub (source of truth):** https://github.com/G33M0D/bioqua
+- **Local clone on the dev machine:** `~/bioqua/`
+
+---
+
+# Architecture: The Four Phases
+
+BIOQUA's methodology runs in four sequential phases. Each one produces data that the next phase depends on.
+
+### Phase 1 — Sample Intake and EC / TDS Measurement
+
+The Arduino turns on the peristaltic pump, which draws water through a pre-filter into a flow-through sensor manifold. An Electrical Conductivity (EC) probe sits fully immersed in the manifold. EC is measured **first**, on bulk water, because accurate TDS estimation needs volume — once the sample is diverted onto a slide or into a microchannel, that chance is gone. The Arduino's ADC digitises the EC reading and uses it as a proxy for TDS.
+
+**Hardware:** pump, pre-filter, flow-through sensor manifold, EC probe
+**Arduino does:** pump control, ADC read, logs the EC value
+**Output:** EC reading in µS/cm → Phase 3 input
+
+### Phase 2 — Aspiration and Injection
+
+A 3/2-way solenoid valve opens the path from the manifold to a 1 mL sample syringe. The syringe draws exactly 1 mL. The Arduino then flips the 3/2-way valve — closing the intake and opening the path to the microfluidic chamber — and pushes the sample in. This step exists to prevent cross-contamination, overpressure, and air bubbles.
+
+**Hardware:** 1 mL syringe (servo or stepper-driven), 3/2-way solenoid valve, microfluidic chamber
+**Arduino does:** aspirate, switch valve, inject
+**Output:** 1 mL of sample sitting stationary in the imaging chamber → Phase 3 input
+
+### Phase 3 — On-Chip Biological Analysis (Gram Staining)
+
+With the sample held stationary, the Arduino runs the automated Gram staining sequence. Each reagent is delivered through serpentine microchannels so mixing happens on-chip. A USB microscope captures the stained bacteria.
+
+The stain order is fixed:
+1. **Crystal Violet** — primary stain (purple)
+2. **Iodine** — mordant (fixes the purple in Gram-positive cell walls)
+3. **Decolorizer** — strips the stain from Gram-negative cells (critical — too long and Gram-positives false-negative)
+4. **Safranin** — counterstain (pink for Gram-negatives)
+
+**Hardware:** reagent solenoid valves (4), DI water valve, serpentine microchannel, USB microscope
+**Arduino does:** time each valve, run wash cycles, hold between steps
+**Output:** microscope images of stained bacteria → AI input
+
+### Phase 4 — Gated Fusion Risk Assessment
+
+The AI combines Phase 2's bacteria classification (Table 2.1) with Phase 3's chemical condition (Table 2.2) using the 15-row gated fusion table (Table 2.3). The result is one of five risk levels: Low-Risk Contamination, Moderate Biological Risk, Moderate Risk, Moderate-High Risk, or High-Risk Contamination.
+
+**Arduino does:** receive the verdict over serial, display short code on the 20x4 LCD
+**Output:** risk level on LCD, on the laptop overlay, and (if data logging is on) in the CSV and PDF report
+
+### AI Approach
+
+The research paper's design has the AI in two layered stages:
+
+1. **Phase I — Morphological Feature Extraction.** SAT-AC (Selective Adaptive Thresholding–Active Contours) segments bacterial bodies from the background. Three descriptor categories are extracted: diameter & area, symmetry, and ratios (elongation / cluster detection).
+2. **Phase II — Two Random Forest models.**
+   - *Model 1 — Gram Color Identification:* classifies slide tint as Gram-positive (purple) or Gram-negative (pink).
+   - *Model 2 — Morphological Categorization:* uses the Phase I descriptors to assign one of six final classes per Table 2.1 (Gram-positive rods / cocci chains / cocci clusters / cocci; Gram-negative rods; Gram-negative cocci).
+
+The current prototype ships with a simpler **MobileNetV2** classifier (from Teachable Machine) covering 5 collapsed classes. This is a drop-in stand-in until the two-Random-Forest pipeline is trained and validated. The gated fusion logic in Phase 4 is identical either way — only the upstream classifier changes.
+
+### Risk Levels
+
+| Short code | Full label (Table 2.3)         | When it fires                                                                 |
+|------------|--------------------------------|-------------------------------------------------------------------------------|
+| `SAFE`     | Safe                           | No bacteria detected AND chemistry stable                                     |
+| `LOW`      | Low-Risk Contamination         | Gram-positive (rods / cocci chains / cocci clusters) AND stable chemistry     |
+| `MOD-BIO`  | Moderate Biological Risk       | Gram-negative bacteria detected AND stable chemistry                          |
+| `MOD`      | Moderate Risk                  | Gram-positive bacteria + moderate TDS increase                                |
+| `MOD-HIGH` | Moderate-High Risk             | Gram-negative bacteria + moderate TDS increase                                |
+| `HIGH`     | High-Risk Contamination        | Severe chemistry (high TDS spike + pH drop), regardless of bacteria class     |
 
 ---
 
