@@ -57,6 +57,13 @@ except ImportError:
 from config import *
 
 
+# ─── Phase III — Gram-Staining Evaluation ───────────────────
+# Target architecture (paper §C.2.2): two Random Forest models — one for
+# Gram colour, one for morphology — feeding Table 2.1 classes.
+# Current implementation: a MobileNetV2 CNN fine-tuned via transfer
+# learning serves as a single-model stand-in until the two-RF pipeline
+# is trained. The Phase IV gated fusion logic is identical either way.
+
 def load_model():
     """Load the trained AI model."""
     if not os.path.exists(AI_MODEL_PATH):
@@ -286,11 +293,16 @@ class RiskResult:
 
 
 def calculate_risk(ph, ec, bacteria_class):
-    """Combine Phase II (bacteria) + Phase III (chemistry) → Phase IV risk.
+    """Combine Phase I (chemistry) × Phase III (bacteria) → Phase IV risk.
 
-    Implements Table 2.3 of docs/Phase.pdf. Returns a RiskResult whose str()
-    is the short code (LOW/MOD/MOD-BIO/MOD-HIGH/HIGH/SAFE) — so legacy callers
-    that treat the return value as a string still work.
+    Implements Table 2.3 (docs/Phase.pdf, also see files/Chapter%203%20Research.pdf).
+    The revised methodology renumbered the phases chronologically; this function
+    cross-examines the Phase I chemical condition against the Phase III bacteria
+    classification using the 15-row gated-fusion table in config.py.
+
+    Returns a RiskResult whose str() is the short code
+    (LOW/MOD/MOD-BIO/MOD-HIGH/HIGH/SAFE) so legacy callers that treat the return
+    value as a string still work.
     """
     chemical_condition = derive_chemical_condition(ph, ec)
 

@@ -161,9 +161,17 @@ RISK_SHORT_CODE = {
     RISK_NONE:          "SAFE",
 }
 
-# ─── GATED FUSION TABLE — TABLE 2.3 (15 rows verbatim from the paper) ─
-# Keyed by (paper bacteria class, Phase III chemical condition).
+# ─── GATED FUSION TABLE — Phase IV decision table (Table 2.3) ─
+# Keyed by (paper bacteria class, Phase I chemical condition).
 # Value: (risk level, interpretation).
+#
+# DELIBERATE RETENTION: rows for stable-chemistry Gram-negative rods and
+# Gram-negative cocci use RISK_MODERATE_BIO ("Moderate Biological Risk")
+# from the original Phase.pdf. The revised Chapter 3 PDF moves both rows
+# to RISK_MODERATE, but the same revised PDF still lists "Moderate
+# Biological Risk" as a defined level — likely an editing inconsistency.
+# We preserve the more-specific label because pathogen-present-with-
+# normal-chemistry is a meaningfully distinct failure mode worth naming.
 GATED_FUSION_TABLE = {
     ("Gram-negative rods", CHEMICAL_SEVERE):   (RISK_HIGH,          "Pathogenic microorganisms with heavy chemical pollution"),
     ("Gram-negative rods", CHEMICAL_MODERATE): (RISK_MODERATE_HIGH, "Harmful microorganisms with the development of pollution"),
