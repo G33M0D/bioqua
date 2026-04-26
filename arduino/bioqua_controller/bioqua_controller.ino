@@ -248,6 +248,7 @@ float readEC() {
 
 void runGramStain() {
     stainingInProgress = true;
+    Serial.println("STAINING_START");   // pause laptop classifier (controller.py listens for this)
     Serial.println("CYCLE_START");
 
     phase1_ecTdsMeasurement();
