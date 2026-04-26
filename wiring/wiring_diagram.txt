@@ -18,17 +18,6 @@ SENSORS
     GND  →  Arduino GND
     A    →  Arduino A1 (analog output)
 
-  (Optional) Temperature Sensor (DS18B20):
-    VCC (red)   →  Arduino 5V
-    GND (black) →  Arduino GND
-    DATA (yellow) → Arduino D7
-    + 4.7k ohm resistor between VCC and DATA
-
-  (Optional) Turbidity Sensor:
-    VCC  →  Arduino 5V
-    GND  →  Arduino GND
-    A    →  Arduino A3
-
 RELAY MODULES (2x 4-channel, active LOW)
 -----------------------------------------
   Relay Module 1:

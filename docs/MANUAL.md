@@ -717,7 +717,7 @@ BIOQUA has optional features that are all turned OFF by default. Turn them on on
 |---------|---------|-------------|
 | Data Logging | `FEATURE_DATA_LOGGING = True` | Saves every test result to a CSV file (`results/test_log.csv`) and captures images. Open the CSV in Excel or Google Sheets to see trends. |
 | PDF Reports | `FEATURE_PDF_REPORTS = True` | Press `r` during a test to generate a printable PDF report with charts and tables. Requires: `pip install fpdf2 matplotlib` |
-| Modular Sensors | `FEATURE_MODULAR_SENSORS = True` | Enables additional sensors (temperature, turbidity). Requires the sensor hardware to be connected. |
+| Modular Sensors | `FEATURE_MODULAR_SENSORS = True` | Extensibility hook for future sensor plug-ins. Not part of BIOQUA's core methodology and disabled in the prototype. Future researchers can add sensors by writing a class under `sensors/` and registering it in `sensors/__init__.py`. |
 | Learning Modules | `FEATURE_LEARNING_MODULES = True` | Interactive terminal-based educational guides about Gram staining, bacteria shapes, AI, water quality, and risk assessment. |
 | Bluetooth Mobile | `FEATURE_BLUETOOTH_MOBILE = True` | Sends results to your phone via Bluetooth using an ESP32 module. Requires ESP32 hardware and the companion app. |
 

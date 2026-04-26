@@ -52,7 +52,7 @@ python python/controller.py       # Main system
 | Core System | Always on | Sensors + staining + AI + LCD |
 | Data Logging | `FEATURE_DATA_LOGGING` | Save tests to CSV |
 | PDF Reports | `FEATURE_PDF_REPORTS` | Generate printable reports |
-| Modular Sensors | `FEATURE_MODULAR_SENSORS` | Add temperature, turbidity |
+| Modular Sensors | `FEATURE_MODULAR_SENSORS` | Extensibility hook for future sensor plug-ins |
 | Learning Modules | `FEATURE_LEARNING_MODULES` | Interactive science guides |
 | Bluetooth Mobile | `FEATURE_BLUETOOTH_MOBILE` | Phone app via ESP32 |
 
